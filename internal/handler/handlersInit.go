@@ -25,7 +25,7 @@ type UserComm interface {
 type Authorization interface {
 	SignUp(ctx context.Context, user *models.User) error
 	GetUser(ctx context.Context, id uuid.UUID) (models.User, error)
-	SignIn(ctx context.Context, user *models.User) (bool, Tokens, error)
+	SignIn(ctx context.Context, user *models.User) (Tokens, error)
 	UpdateRefreshToken(context.Context, string, uuid.UUID) error
 }
 

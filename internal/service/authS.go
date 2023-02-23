@@ -2,7 +2,6 @@ package service
 
 import (
 	"cmdMS/internal/handler"
-	"cmdMS/internal/utils"
 	"cmdMS/models"
 	"context"
 	"crypto/sha256"
@@ -16,7 +15,7 @@ const salt = "s53d42fg98gh7j6kkbver"
 // Authorization interface consists of methos to communicate with user repo
 type Authorization interface {
 	SignUp(ctx context.Context, user *models.User) error
-	SignIn(ctx context.Context, user *models.User) error
+	SignIn(ctx context.Context, user *models.User) (handler.Tokens, error)
 	GetUserByID(context.Context, uuid.UUID) (models.User, error)
 	UpdateRefreshToken(context.Context, string, uuid.UUID) error
 }
@@ -47,29 +46,13 @@ func (s *AuthService) GetUser(ctx context.Context, id uuid.UUID) (models.User, e
 	return user, err
 }
 
-// SignInUser used to sign in user
+// SignIn used to sign in user
 func (s *AuthService) SignIn(ctx context.Context, user *models.User) (bool, handler.Tokens, error) {
-	hashedPass := generatePasswordHash(user.Password)
-	err := s.repo.SignIn(ctx, user)
+	tokens, err := s.repo.SignIn(ctx, user)
 	if err != nil {
-		return false, handler.Tokens{}, fmt.Errorf("error while sign in query %w", err)
+		return handler.Tokens{}, fmt.Errorf("error while sign in query %w", err)
 	}
-	if user.Password == hashedPass {
-		rt, errRT := utils.GenerateToken(user.UserID, utils.TokenRTDuration)
-		if errRT != nil {
-			return false, handler.Tokens{}, fmt.Errorf("error while creating rt token, %s", errRT)
-		}
-		at, errAT := utils.GenerateToken(user.UserID, utils.TokenATDuretion)
-		if errAT != nil {
-			return false, handler.Tokens{}, fmt.Errorf("error while creating at token, %s", errRT)
-		}
-		errUpdateRT := s.repo.UpdateRefreshToken(ctx, rt, user.UserID)
-		if errUpdateRT != nil {
-			return false, handler.Tokens{}, fmt.Errorf("error while updating, %s", errUpdateRT)
-		}
-		return true, handler.Tokens{AccessToken: at, RefreshToken: rt}, nil
-	}
-	return false, handler.Tokens{}, nil
+	return tokens, nil
 }
 
 func (s *AuthService) UpdateRefreshToken(context.Context, string, uuid.UUID) error {

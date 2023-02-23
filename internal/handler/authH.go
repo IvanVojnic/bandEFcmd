@@ -23,15 +23,6 @@ func (h *Handler) SignUp(c echo.Context) error {
 		}).Info("Bind json")
 		return echo.NewHTTPError(http.StatusInternalServerError, "data not correct")
 	}
-	user.UserID = uuid.New()
-	/*rt, errRT := utils.GenerateToken(user.UserID, utils.TokenRTDuration)
-	if errRT != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "smth went wrong")
-	}
-	at, errAT := utils.GenerateToken(user.UserID, utils.TokenATDuretion)
-	if errAT != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "smth went wrong")
-	}*/
 	err := h.authS.SignUp(c.Request().Context(), &user)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
@@ -52,17 +43,14 @@ func (h *Handler) SignIn(c echo.Context) error {
 		}).Info("Bind json")
 		return echo.NewHTTPError(http.StatusInternalServerError, "data not correct")
 	}
-	isVerified, tokens, err := h.authS.SignIn(c.Request().Context(), &user)
+	tokens, err := h.authS.SignIn(c.Request().Context(), &user)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"Error sign in user": err,
 		}).Info("SIGN IN USER request")
-		return echo.NewHTTPError(http.StatusBadRequest, "user sign in failed")
+		return echo.NewHTTPError(http.StatusUnauthorized, "wrong data")
 	}
-	if isVerified {
-		return c.JSON(http.StatusOK, &tokens)
-	}
-	return echo.NewHTTPError(http.StatusUnauthorized, "wrong data")
+	return c.JSON(http.StatusOK, &tokens)
 }
 
 func (h *Handler) GetUserAuth(c echo.Context) error {

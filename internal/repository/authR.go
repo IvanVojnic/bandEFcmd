@@ -4,40 +4,40 @@ import (
 	"cmdMS/models"
 	"context"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"google.golang.org/grpc"
 )
 
-// UserPostgres has an internal db object
-type UserPostgres struct {
-	db *pgxpool.Pool
+// UserMS has an internal grpc object
+type UserMS struct {
+	conn *grpc.ClientConn
 }
 
-// NewUserAuthPostgres used to init UsesAP
-func NewUserPostgres(db *pgxpool.Pool) *UserPostgres {
-	return &UserPostgres{db: db}
+// NewUserMS used to init UsesAP
+func NewUserMS(conn *grpc.ClientConn) *UserMS {
+	return &UserMS{conn: conn}
 }
 
 // SignUp used to create user
-func (r *UserPostgres) SignUp(ctx context.Context, user *models.User) error {
+func (r *UserMS) SignUp(ctx context.Context, user *models.User) error {
 
 	return nil
 }
 
 // UpdateRefreshToken used to update rt
-func (r *UserPostgres) UpdateRefreshToken(ctx context.Context, rt string, id uuid.UUID) error {
+func (r *UserMS) UpdateRefreshToken(ctx context.Context, rt string, id uuid.UUID) error {
 
 	return nil
 }
 
 // GetUserByID used to get user by ID
-func (r *UserPostgres) GetUserByID(ctx context.Context, userID uuid.UUID) (models.User, error) {
+func (r *UserMS) GetUserByID(ctx context.Context, userID uuid.UUID) (models.User, error) {
 	user := models.User{}
 
 	return user, nil
 }
 
 // SignInUser used to sign in user
-func (r *UserPostgres) SignIn(ctx context.Context, user *models.User) error {
+func (r *UserMS) SignIn(ctx context.Context, user *models.User) error {
 
 	return nil
 }

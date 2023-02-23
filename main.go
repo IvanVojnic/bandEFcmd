@@ -1,9 +1,10 @@
 package main
 
 import (
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"os"
 
-	"cmdMS/internal/config"
 	"cmdMS/internal/handler"
 	"cmdMS/internal/repository"
 	"cmdMS/internal/service"
@@ -11,6 +12,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/sirupsen/logrus"
+
+	"github.com/IvanVojnic/bandEFuser/proto"
 )
 
 func main() {
@@ -28,22 +31,14 @@ func main() {
 			return nil
 		},
 	}))
-	cfg, err := config.NewConfig()
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"Error":  err,
-			"config": cfg,
-		}).Fatal("failed to get config")
-	}
+
 	var profileServ *service.AuthService
 	var userServ *service.UserCommSrv
-	db, err := repository.NewPostgresDB(cfg)
+	conn, err := grpc.Dial(":8000", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"Error connection to database rep.NewPostgresDB()": err,
-		}).Fatal("DB ERROR CONNECTION")
+		logrus.Fatalf("error while conecting to user ms, %s", err)
 	}
-	defer repository.ClosePool(db)
+	c := pr.NewMs1Client(conn)
 	profileRepo := repository.NewUserPostgres(db)
 	userRepo := repository.NewUserCommPostgres(db)
 	profileServ = service.NewAuthService(profileRepo)

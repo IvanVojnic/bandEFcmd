@@ -13,7 +13,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/sirupsen/logrus"
 
-	"github.com/IvanVojnic/bandEFuser/proto"
+	pr "github.com/IvanVojnic/bandEFuser/proto"
 )
 
 func main() {
@@ -38,7 +38,7 @@ func main() {
 	if err != nil {
 		logrus.Fatalf("error while conecting to user ms, %s", err)
 	}
-	c := pr.NewMs1Client(conn)
+	c := pr.NewUserClient(conn)
 	profileRepo := repository.NewUserPostgres(db)
 	userRepo := repository.NewUserCommPostgres(db)
 	profileServ = service.NewAuthService(profileRepo)

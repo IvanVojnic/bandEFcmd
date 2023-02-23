@@ -37,17 +37,20 @@ func (s *AuthService) SignUp(ctx context.Context, user *models.User) error {
 	if err != nil {
 		return fmt.Errorf("error create auth user %w", err)
 	}
-	return err
+	return nil
 }
 
 // GetUserVerified used to get user
 func (s *AuthService) GetUser(ctx context.Context, id uuid.UUID) (models.User, error) {
 	user, err := s.repo.GetUserByID(ctx, id)
-	return user, err
+	if err != nil {
+		return models.User{}, fmt.Errorf("error while getting user, %s", err)
+	}
+	return user, nil
 }
 
 // SignIn used to sign in user
-func (s *AuthService) SignIn(ctx context.Context, user *models.User) (bool, handler.Tokens, error) {
+func (s *AuthService) SignIn(ctx context.Context, user *models.User) (handler.Tokens, error) {
 	tokens, err := s.repo.SignIn(ctx, user)
 	if err != nil {
 		return handler.Tokens{}, fmt.Errorf("error while sign in query %w", err)

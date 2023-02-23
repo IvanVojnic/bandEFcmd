@@ -20,14 +20,14 @@ func (h *Handler) SignUp(c echo.Context) error {
 		logrus.WithFields(logrus.Fields{
 			"Error Bind json while creating user": errBind,
 			"user":                                user,
-		}).Info("Bind json")
+		}).Errorf("Bind json, %s", errBind)
 		return echo.NewHTTPError(http.StatusInternalServerError, "data not correct")
 	}
 	err := h.authS.SignUp(c.Request().Context(), &user)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"Error create user": err,
-		}).Info("CREATE USER request")
+		}).Errorf("CREATE USER request, %s", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "user creating failed")
 	}
 	return c.String(http.StatusOK, "user created")
@@ -40,14 +40,14 @@ func (h *Handler) SignIn(c echo.Context) error {
 		logrus.WithFields(logrus.Fields{
 			"Error Bind json while creating user": errBind,
 			"user":                                user,
-		}).Info("Bind json")
+		}).Errorf("Bind json, %s", errBind)
 		return echo.NewHTTPError(http.StatusInternalServerError, "data not correct")
 	}
 	tokens, err := h.authS.SignIn(c.Request().Context(), &user)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"Error sign in user": err,
-		}).Info("SIGN IN USER request")
+		}).Errorf("SIGN IN USER request, %s", err)
 		return echo.NewHTTPError(http.StatusUnauthorized, "wrong data")
 	}
 	return c.JSON(http.StatusOK, &tokens)
@@ -60,7 +60,7 @@ func (h *Handler) GetUserAuth(c echo.Context) error {
 		logrus.WithFields(logrus.Fields{
 			"Error get user": err,
 			"user":           user,
-		}).Info("GET USER request")
+		}).Errorf("GET USER request, %s", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "sign up please")
 	}
 	return c.JSON(http.StatusOK, response{&user})
@@ -70,6 +70,10 @@ func (h *Handler) RefreshToken(c echo.Context) error {
 	var tokens Tokens
 	errBind := c.Bind(&tokens)
 	if errBind != nil {
+		logrus.WithFields(logrus.Fields{
+			"Error get tokens": errBind,
+			"tokens":           tokens,
+		}).Errorf("Refresh tokens request, %s", errBind)
 		return echo.NewHTTPError(http.StatusInternalServerError, "cannot bind")
 	}
 	checkRT, errRT := utils.ParseToken(tokens.RefreshToken)

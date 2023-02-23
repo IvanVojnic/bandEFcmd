@@ -4,13 +4,11 @@ import (
 	"cmdMS/internal/handler"
 	"cmdMS/models"
 	"context"
-	"crypto/sha256"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/google/uuid"
 )
-
-const salt = "s53d42fg98gh7j6kkbver"
 
 // Authorization interface consists of methos to communicate with user repo
 type Authorization interface {
@@ -32,7 +30,10 @@ func NewAuthService(repo Authorization) *AuthService {
 
 // SignUp used to
 func (s *AuthService) SignUp(ctx context.Context, user *models.User) error {
-	user.Password = generatePasswordHash(user.Password)
+	errPass := generatePasswordHash(user)
+	if errPass != nil {
+		return fmt.Errorf("cannot hash password, %s", errPass)
+	}
 	err := s.repo.SignUp(ctx, user)
 	if err != nil {
 		return fmt.Errorf("error create auth user %w", err)
@@ -63,8 +64,8 @@ func (s *AuthService) UpdateRefreshToken(context.Context, string, uuid.UUID) err
 }
 
 // generatePasswordHash used to generate hash password
-func generatePasswordHash(password string) string {
-	hash := sha256.New()
-	hash.Write([]byte(password))
-	return fmt.Sprintf("%x", hash.Sum([]byte(salt)))
+func generatePasswordHash(user *models.User) error {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(user.Password), 14)
+	user.Password = string(bytes)
+	return err
 }

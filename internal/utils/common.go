@@ -24,7 +24,7 @@ type tokenClaims struct {
 }
 
 // ParseToken used to parse tokens with claims
-func ParseToken(tokenToParse string) (bool, error) {
+func ParseToken(tokenToParse string) (uuid.UUID, error) {
 	token, err := jwt.ParseWithClaims(tokenToParse, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("invalid signing method")
@@ -32,13 +32,14 @@ func ParseToken(tokenToParse string) (bool, error) {
 		return []byte(SigningKey), nil
 	})
 	if err != nil {
-		return false, err
+		return uuid.UUID{}, err
 	}
-	_, ok := token.Claims.(*tokenClaims)
-	if !ok {
-		return false, errors.New("token claims are not type of tokenClaims")
+	claims, ok := token.Claims.(*tokenClaims)
+	if ok && !token.Valid {
+		return uuid.UUID{}, fmt.Errorf("invalid Token")
 	}
-	return false, nil
+
+	return claims.UserID, nil
 }
 
 // GenerateToken used to generate tokens with id
@@ -60,27 +61,6 @@ func IsAuthorized(requestToken string) (bool, error) {
 		return false, err
 	}
 	return true, nil
-}
-
-// ExtractIDFromToken used to get id from the token
-func ExtractIDFromToken(requestToken string) (uuid.UUID, error) {
-	token, err := jwt.ParseWithClaims(requestToken, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(SigningKey), nil
-	})
-
-	if err != nil {
-		return uuid.UUID{}, err
-	}
-
-	claims, ok := token.Claims.(*tokenClaims)
-	if ok && !token.Valid {
-		return uuid.UUID{}, fmt.Errorf("invalid Token")
-	}
-
-	return claims.UserID, nil
 }
 
 // IsTokenExpired used to check is token expired

@@ -78,16 +78,12 @@ func jwtAuthMiddleware() echo.MiddlewareFunc {
 			}
 			atHeaderArr := strings.Split(atHeader, " ")
 			tokens.AccessToken = atHeaderArr[1]
-			authorized, errIsAuth := utils.IsAuthorized(tokens.AccessToken)
-			if authorized {
-				userID, errGetID := utils.ExtractIDFromToken(tokens.AccessToken)
-				if errGetID != nil {
-					return echo.NewHTTPError(http.StatusUnauthorized, errorwrapper.ErrorResponse{Message: errGetID.Error()})
-				}
-				c.Set("user_id", userID)
-				return next(c)
+			userID, errIsAuth := utils.IsAuthorized(tokens.AccessToken)
+			if errIsAuth != nil {
+				return echo.NewHTTPError(http.StatusUnauthorized, errorwrapper.ErrorResponse{Message: errIsAuth.Error()})
 			}
-			return echo.NewHTTPError(http.StatusUnauthorized, errorwrapper.ErrorResponse{Message: errIsAuth.Error()})
+			c.Set("user_id", userID)
+			return next(c)
 		}
 	}
 }

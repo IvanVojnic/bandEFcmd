@@ -76,20 +76,13 @@ func (h *Handler) RefreshToken(c echo.Context) error {
 		}).Errorf("Refresh tokens request, %s", errBind)
 		return echo.NewHTTPError(http.StatusInternalServerError, "cannot bind")
 	}
-	checkRT, errRT := utils.ParseToken(tokens.RefreshToken)
-	if checkRT {
-		if errRT != nil {
-			return echo.NewHTTPError(http.StatusUnauthorized, "bad refresh token")
-		}
-		id, errGetID := utils.ExtractIDFromToken(tokens.RefreshToken)
-		if errGetID != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, "smth went wrong")
-		}
-		newAt, errAT := utils.GenerateToken(id, utils.TokenATDuretion)
-		if errAT != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, "cannot bind")
-		}
-		return c.JSON(http.StatusOK, Tokens{AccessToken: newAt, RefreshToken: tokens.RefreshToken})
+	userID, errRT := utils.ParseToken(tokens.RefreshToken)
+	if errRT != nil {
+		return echo.NewHTTPError(http.StatusUnauthorized, "login please")
 	}
-	return echo.NewHTTPError(http.StatusUnauthorized, "login please")
+	newAt, errAT := utils.GenerateToken(userID, utils.TokenATDuretion)
+	if errAT != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "cannot bind")
+	}
+	return c.JSON(http.StatusOK, Tokens{AccessToken: newAt, RefreshToken: tokens.RefreshToken})
 }

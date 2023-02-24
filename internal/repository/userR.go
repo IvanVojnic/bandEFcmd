@@ -1,125 +1,87 @@
 package repository
 
 import (
+	"cmdMS/internal/handler"
 	"cmdMS/models"
 	"context"
 	"fmt"
+	pr "github.com/IvanVojnic/bandEFuser/proto"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// UserCommPostgres is a wrapper to db object
-type UserCommPostgres struct {
-	db *pgxpool.Pool
+// UserMS has an internal grpc object
+type UserMS struct {
+	client pr.UserClient
 }
 
-// NewUserCommPostgres used to init UserCommPostgres
-func NewUserCommPostgres(db *pgxpool.Pool) *UserCommPostgres {
-	return &UserCommPostgres{db: db}
+// NewUserMS used to init UsesAP
+func NewUserMS(client pr.UserClient) *UserMS {
+	return &UserMS{client: client}
+}
+
+// SignUp used to create user
+func (r *UserMS) SignUp(ctx context.Context, user *models.User) error {
+	res, errGRPC := r.client.SignUp(ctx, &pr.SignUpRequest{Password: user.Password, Name: user.Name, Email: user.Email})
+	if errGRPC != nil {
+		return fmt.Errorf("error while sign up, %s", errGRPC)
+	}
+	if res.IsCreated {
+		return nil
+	}
+	return fmt.Errorf("cannot create user")
+}
+
+// SignInUser used to sign in user
+func (r *UserMS) SignIn(ctx context.Context, user *models.User) (handler.Tokens, error) {
+	res, errGRPC := r.client.SignIn(ctx, &pr.SignInRequest{Name: user.Name, Password: user.Password})
+	if errGRPC != nil {
+		return handler.Tokens{}, fmt.Errorf("error while sign up, %s", errGRPC)
+	}
+
+	return handler.Tokens{RefreshToken: res.Rt, AccessToken: res.At}, nil
+}
+
+// UpdateRefreshToken used to update rt
+func (r *UserMS) UpdateRefreshToken(ctx context.Context, rt string, id uuid.UUID) error {
+
+	return nil
+}
+
+// GetUserByID used to get user by ID
+func (r *UserMS) GetUserByID(ctx context.Context, userID uuid.UUID) (models.User, error) {
+	user := models.User{}
+
+	return user, nil
 }
 
 // GetFriends used to send friends
-func (r *UserCommPostgres) GetFriends(ctx context.Context, userID uuid.UUID) ([]models.User, error) {
+func (r *UserMS) GetFriends(ctx context.Context, userID uuid.UUID) ([]models.User, error) {
 	users := make([]models.User, 0)
-	rowsSender, err := r.db.Query(ctx,
-		`select users.id, users.email from users
-    		inner join friends on friends.userReceiver = users.id where friends.userSender=$1 and status=$2`, userID, 1)
-	if err != nil {
-		return users, fmt.Errorf("get all friends sql script error %w", err)
-	}
-	defer rowsSender.Close()
-	for rowsSender.Next() {
-		var user models.User
-		errScan := rowsSender.Scan(&user.UserID, &user.UserEmail)
-		if errScan != nil {
-			return users, fmt.Errorf("get all friends scan rows error %w", errScan)
-		}
-		users = append(users, user)
-	}
-	rowsReceiver, err := r.db.Query(ctx,
-		`select users.id, users.email from users
-    		inner join friends on friends.userSender = users.id where friends.userReceiver=$1 and status=$2`, userID, 1)
-	if err != nil {
-		return users, fmt.Errorf("get all friends sql script error %w", err)
-	}
-	defer rowsReceiver.Close()
-	for rowsReceiver.Next() {
-		var user models.User
-		errScan := rowsReceiver.Scan(&user.UserID, &user.UserEmail)
-		if errScan != nil {
-			return users, fmt.Errorf("get all friends scan rows error %w", errScan)
-		}
-		users = append(users, user)
-	}
+
 	return users, nil
 }
 
 // SendFriendsRequest used to send requests for user
-func (r *UserCommPostgres) SendFriendsRequest(ctx context.Context, userSender uuid.UUID, userReceiver uuid.UUID) error {
-	friendsID := uuid.New()
-	_, err := r.db.Exec(ctx, "insert into friends (id, userSender, userReceiver, status_id) values($1, $2, $3, $4)",
-		friendsID, userSender, userReceiver, 0)
-	if err != nil {
-		return fmt.Errorf("error while friends relationship creating: %s", err)
-	}
+func (r *UserMS) SendFriendsRequest(ctx context.Context, userSender uuid.UUID, userReceiver uuid.UUID) error {
 	return nil
 }
 
 // AcceptFriendsRequest used to accept request
-func (r *UserCommPostgres) AcceptFriendsRequest(ctx context.Context, userSenderID uuid.UUID, userID uuid.UUID) error {
-	_, err := r.db.Exec(ctx,
-		`UPDATE friends 
-			SET status=$1 
-			WHERE userSender=$2 AND userReceiver=$3`,
-		1, userSenderID, userID)
-	if err != nil {
-		return fmt.Errorf("update friends error %w", err)
-	}
+func (r *UserMS) AcceptFriendsRequest(ctx context.Context, userSenderID uuid.UUID, userID uuid.UUID) error {
+
 	return nil
 }
 
 // FindUser used to find user by email
-func (r *UserCommPostgres) FindUser(ctx context.Context, userEmail string) (models.User, error) {
+func (r *UserMS) FindUser(ctx context.Context, userEmail string) (models.User, error) {
 	var user models.User
-	err := r.db.QueryRow(ctx, "select users.id, users.email from users where users.email=$1", userEmail).Scan(&user)
-	if err != nil {
-		return user, fmt.Errorf("error: cannot get id, %w", err)
-	}
+
 	return user, nil
 }
 
 // GetRequest used to send request to be a friends
-func (r *UserCommPostgres) GetRequest(ctx context.Context, userID uuid.UUID) ([]models.User, error) {
+func (r *UserMS) GetRequest(ctx context.Context, userID uuid.UUID) ([]models.User, error) {
 	users := make([]models.User, 0)
-	rowsSender, err := r.db.Query(ctx,
-		`select users.id, users.email from users
-    		inner join friends on friends.userReceiver = users.id where friends.userSender=$1 and status=$2`, userID, 0)
-	if err != nil {
-		return users, fmt.Errorf("get all friends requests sql script error %w", err)
-	}
-	defer rowsSender.Close()
-	for rowsSender.Next() {
-		var user models.User
-		errScan := rowsSender.Scan(&user.UserID, &user.UserEmail)
-		if errScan != nil {
-			return users, fmt.Errorf("get all friends requests scan rows error %w", errScan)
-		}
-		users = append(users, user)
-	}
-	rowsReceiver, err := r.db.Query(ctx,
-		`select users.id, users.email from users
-    		inner join friends on friends.userSender = users.id where friends.userReceiver=$1 and status=$2`, userID, 0)
-	if err != nil {
-		return users, fmt.Errorf("get all friends requests sql script error %w", err)
-	}
-	defer rowsReceiver.Close()
-	for rowsReceiver.Next() {
-		var user models.User
-		errScan := rowsReceiver.Scan(&user.UserID, &user.UserEmail)
-		if errScan != nil {
-			return users, fmt.Errorf("get all friends requests scan rows error %w", errScan)
-		}
-		users = append(users, user)
-	}
+
 	return users, nil
 }

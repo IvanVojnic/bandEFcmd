@@ -32,17 +32,17 @@ func main() {
 		},
 	}))
 
-	var profileServ *service.AuthService
-	var userServ *service.UserCommSrv
+	var userAuthServ *service.AuthService
+	var userCommServ *service.UserCommSrv
 	conn, err := grpc.Dial(":8000", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		logrus.Fatalf("error while conecting to user ms, %s", err)
 	}
-	c := pr.NewUserClient(conn)
-	profileRepo := repository.NewUserPostgres(db)
-	userRepo := repository.NewUserCommPostgres(db)
-	profileServ = service.NewAuthService(profileRepo)
-	userServ = service.NewUserCommSrv(userRepo)
-	profileHandlers := handler.NewHandler(profileServ, userServ)
+
+	client := pr.NewUserClient(conn)
+	userRepo := repository.NewUserMS(client)
+	userAuthServ = service.NewAuthService(userRepo)
+	userCommServ = service.NewUserCommSrv(userRepo)
+	profileHandlers := handler.NewHandler(userAuthServ, userCommServ)
 	profileHandlers.InitRoutes(e)
 }

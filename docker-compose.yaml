@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: vojnic/bandef:users
+    image: vojnic/bandef:cmdMS
     ports:
       - "3000:40000"
     networks:

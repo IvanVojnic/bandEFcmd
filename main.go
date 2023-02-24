@@ -34,7 +34,7 @@ func main() {
 
 	var userAuthServ *service.AuthService
 	var userCommServ *service.UserCommSrv
-	conn, err := grpc.Dial(":8000", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(os.Getenv("PORT"), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		logrus.Fatalf("error while conecting to user ms, %s", err)
 	}

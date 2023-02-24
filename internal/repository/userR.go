@@ -57,7 +57,13 @@ func (r *UserMS) GetUserByID(ctx context.Context, userID uuid.UUID) (models.User
 // GetFriends used to send friends
 func (r *UserMS) GetFriends(ctx context.Context, userID uuid.UUID) ([]models.User, error) {
 	users := make([]models.User, 0)
-
+	res, errGRPC := r.client.SignIn(ctx, &pr.SignInRequest{userID: userID})
+	if errGRPC != nil {
+		return users, fmt.Errorf("error while sign up, %s", errGRPC)
+	}
+	for i := 0; i < len(res.users); i++ {
+		users = append(users, res.users[i])
+	}
 	return users, nil
 }
 

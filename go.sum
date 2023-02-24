@@ -1,5 +1,5 @@
-github.com/IvanVojnic/bandEFuser v1.0.0 h1:reSPOw57MZopk+46h2J/k1T+D+fkhT/dxEkm4DqnKi0=
-github.com/IvanVojnic/bandEFuser v1.0.0/go.mod h1:7ESvjm8zjlvj7NENU8pcKb3CIWi1Qsujimq9OBvv14A=
+github.com/IvanVojnic/bandEFuser v1.0.1 h1:1H2m+zxSXIYUd3n6G09zJLSEdnGManmO9JNBbxup5HU=
+github.com/IvanVojnic/bandEFuser v1.0.1/go.mod h1:7ESvjm8zjlvj7NENU8pcKb3CIWi1Qsujimq9OBvv14A=
 github.com/caarlos0/env/v7 v7.0.0 h1:cyczlTd/zREwSr9ch/mwaDl7Hse7kJuUY8hvHfXu5WI=
 github.com/caarlos0/env/v7 v7.0.0/go.mod h1:LPPWniDUq4JaO6Q41vtlyikhMknqymCLBw0eX4dcH1E=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

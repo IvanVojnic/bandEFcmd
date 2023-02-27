@@ -62,7 +62,12 @@ func (r *UserMS) GetFriends(ctx context.Context, userID uuid.UUID) ([]models.Use
 		return users, fmt.Errorf("error while sign up, %s", errGRPC)
 	}
 	for i := 0; i < len(res.Friends); i++ {
-		users = append(users, res.Friends[i])
+		friendID, errParse := uuid.Parse(res.Friends[i].UserID)
+		if errParse != nil {
+			return users, fmt.Errorf("error while getting friends, %s", errParse)
+		}
+		user := models.User{ID: friendID, Name: res.Friends[i].Name, Email: res.Friends[i].Email}
+		users = append(users, user)
 	}
 	return users, nil
 }

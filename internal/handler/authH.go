@@ -9,10 +9,6 @@ import (
 	"net/http"
 )
 
-type response struct {
-	User *models.User `json:"user"`
-}
-
 func (h *Handler) SignUp(c echo.Context) error {
 	user := models.User{}
 	errBind := c.Bind(&user)
@@ -63,7 +59,7 @@ func (h *Handler) GetUserAuth(c echo.Context) error {
 		}).Errorf("GET USER request, %s", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "sign up please")
 	}
-	return c.JSON(http.StatusOK, response{&user})
+	return c.JSON(http.StatusOK, user)
 }
 
 func (h *Handler) RefreshToken(c echo.Context) error {

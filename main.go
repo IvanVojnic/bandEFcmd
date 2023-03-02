@@ -1,9 +1,10 @@
 package main
 
 import (
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"os"
 
-	"cmdMS/internal/config"
 	"cmdMS/internal/handler"
 	"cmdMS/internal/repository"
 	"cmdMS/internal/service"
@@ -11,6 +12,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/sirupsen/logrus"
+
+	pr "github.com/IvanVojnic/bandEFuser/proto"
 )
 
 func main() {
@@ -28,26 +31,18 @@ func main() {
 			return nil
 		},
 	}))
-	cfg, err := config.NewConfig()
+
+	var userAuthServ *service.AuthService
+	var userCommServ *service.UserCommSrv
+	conn, err := grpc.Dial(os.Getenv("PORT"), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"Error":  err,
-			"config": cfg,
-		}).Fatal("failed to get config")
+		logrus.Fatalf("error while conecting to user ms, %s", err)
 	}
-	var profileServ *service.AuthService
-	var userServ *service.UserCommSrv
-	db, err := repository.NewPostgresDB(cfg)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"Error connection to database rep.NewPostgresDB()": err,
-		}).Fatal("DB ERROR CONNECTION")
-	}
-	defer repository.ClosePool(db)
-	profileRepo := repository.NewUserPostgres(db)
-	userRepo := repository.NewUserCommPostgres(db)
-	profileServ = service.NewAuthService(profileRepo)
-	userServ = service.NewUserCommSrv(userRepo)
-	profileHandlers := handler.NewHandler(profileServ, userServ)
+
+	client := pr.NewUserClient(conn)
+	userRepo := repository.NewUserMS(client)
+	userAuthServ = service.NewAuthService(userRepo)
+	userCommServ = service.NewUserCommSrv(userRepo)
+	profileHandlers := handler.NewHandler(userAuthServ, userCommServ)
 	profileHandlers.InitRoutes(e)
 }

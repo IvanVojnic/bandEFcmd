@@ -6,6 +6,7 @@ import (
 	"fmt"
 	pr "github.com/IvanVojnic/bandEFroom/proto"
 	"github.com/google/uuid"
+	"time"
 )
 
 // RoomMS has an internal grpc object
@@ -21,7 +22,22 @@ func NewRoomMS(client pr.RoomClient) *RoomMS {
 // GetRooms used to get rooms where you had invited
 func (r *RoomMS) GetRooms(ctx context.Context, userID uuid.UUID) ([]models.Room, error) {
 	var rooms []models.Room
-	res, errGRPC := r.client.GetRooms(ctx, &pr.GetRoomsRequest{UserID: userID})
+	res, errGRPC := r.client.GetRooms(ctx, &pr.GetRoomsRequest{UserID: userID.String()})
+	for _, room := range res.Rooms {
+		roomID, errRoomID := uuid.Parse(room.RoomID)
+		if errRoomID != nil {
+			return rooms, fmt.Errorf("error while parsing room ID, %s", errRoomID)
+		}
+		date, errDateParse := time.Parse("2006-01-02 15:04:05", room.Date)
+		if errDateParse != nil {
+			return rooms, fmt.Errorf("error while parsing date, %s", errDateParse)
+		}
+		userCreatorID, errUserID := uuid.Parse(room.UserCreatorId)
+		if errUserID != nil {
+			return rooms, fmt.Errorf("error while parsing user ID, %s", errUserID)
+		}
+		rooms = append(rooms, models.Room{ID: roomID, Place: room.Place, Date: date, UserCreatorID: userCreatorID})
+	}
 	if errGRPC != nil {
 		return rooms, fmt.Errorf("error while sign up, %s", errGRPC)
 	}

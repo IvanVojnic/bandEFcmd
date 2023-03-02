@@ -3,11 +3,12 @@ module cmdMS
 go 1.19
 
 require (
-	github.com/IvanVojnic/bandEFuser v1.0.1
+	github.com/IvanVojnic/bandEFroom v1.0.0
+	github.com/IvanVojnic/bandEFuser v1.0.2
 	github.com/caarlos0/env/v7 v7.0.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/google/uuid v1.3.0
-	github.com/jackc/pgx/v5 v5.3.0
+	github.com/jackc/pgx/v5 v5.3.1
 	github.com/labstack/echo/v4 v4.10.2
 	github.com/sirupsen/logrus v1.9.0
 	golang.org/x/crypto v0.6.0

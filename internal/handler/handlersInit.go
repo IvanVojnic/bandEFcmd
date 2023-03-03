@@ -10,6 +10,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // UserComm service consists of methods of user actions
@@ -17,6 +18,7 @@ type UserComm interface {
 	GetFriends(ctx context.Context, userID uuid.UUID) ([]models.User, error)
 	SendFriendsRequest(ctx context.Context, userSender uuid.UUID, userReceiver uuid.UUID) error
 	AcceptFriendsRequest(ctx context.Context, userSenderID uuid.UUID, userReceiverID uuid.UUID) error
+	DeclineFriendsRequest(ctx context.Context, userSenderID uuid.UUID, userID uuid.UUID) error
 	FindUser(ctx context.Context, userEmail string) (models.User, error)
 	GetRequest(ctx context.Context, userID uuid.UUID) ([]models.User, error)
 }
@@ -24,24 +26,26 @@ type UserComm interface {
 // Authorization service consists of methods fo user
 type Authorization interface {
 	SignUp(ctx context.Context, user *models.User) error
-	GetUser(ctx context.Context, id uuid.UUID) (models.User, error)
-	SignIn(ctx context.Context, user *models.User) (Tokens, error)
+	SignIn(ctx context.Context, user *models.User) (models.Tokens, error)
 	UpdateRefreshToken(context.Context, string, uuid.UUID) error
+}
+
+type RoomInvite interface {
+	SendInvite(ctx context.Context, userCreatorID uuid.UUID, usersID *[]uuid.UUID, place string, date time.Time) error
+	AcceptInvite(ctx context.Context, userID uuid.UUID, roomID uuid.UUID) error
+	DeclineInvite(ctx context.Context, userID uuid.UUID, roomID uuid.UUID, status int) error
+	GetRooms(ctx context.Context, user uuid.UUID) (*[]models.Room, error)
+	GetRoomUsers(ctx context.Context, roomID uuid.UUID) (*[]models.User, error)
 }
 
 type Handler struct {
 	authS Authorization
 	userS UserComm
+	roomS RoomInvite
 }
 
-// Tokens used to define at and rt
-type Tokens struct {
-	AccessToken  string `json:"access"`
-	RefreshToken string `json:"refresh"`
-}
-
-func NewHandler(authS Authorization, users UserComm) *Handler {
-	return &Handler{authS: authS, userS: users}
+func NewHandler(authS Authorization, userS UserComm, roomS RoomInvite) *Handler {
+	return &Handler{authS: authS, userS: userS, roomS: roomS}
 }
 
 // InitRoutes used to init routes.txt
@@ -51,14 +55,20 @@ func (h *Handler) InitRoutes(router *echo.Echo) *echo.Echo {
 	rAuth.POST("/refreshToken", h.RefreshToken)
 	rAuth.POST("/createUser", h.SignUp)
 	rAuth.POST("/signIn", h.SignIn)
-	rAuth.POST("/getUserAuth", h.GetUserAuth)
 	rUserComm := router.Group("/userComm")
 	rUserComm.Use(middleware.Logger())
 	rUserComm.POST("/getFriends", h.GetFriends)
 	rUserComm.GET("/getFriendsRequest", h.SendFriendsRequest)
 	rUserComm.POST("/acceptFriendsRequest", h.AcceptFriendsRequest)
+	rUserComm.POST("/declineFriendsRequest", h.DeclineFriendsRequest)
 	rUserComm.GET("/findFriend", h.FindUser)
 	rUserComm.GET("/sendRequest", h.GetRequest)
+	rRoom := router.Group("/room")
+	rRoom.POST("/sendInvite", h.SendInvite)
+	rRoom.POST("/acceptInvite", h.AcceptInvite)
+	rRoom.POST("/declineInvite", h.DeclineInvite)
+	rRoom.POST("/getRooms", h.GetRooms)
+	rRoom.POST("/getRoomUsers", h.GetRoomUsers)
 	router.Logger.Fatal(router.Start(":40000"))
 	return router
 }
@@ -69,7 +79,7 @@ func jwtAuthMiddleware() echo.MiddlewareFunc {
 			if c.Path() == "/auth/createUser" || c.Path() == "/auth/signIn" || c.Path() == "/auth/refreshToken" {
 				return next(c)
 			}
-			var tokens Tokens
+			var tokens models.Tokens
 			req := c.Request()
 			headers := req.Header
 			atHeader := headers.Get("Authorization")

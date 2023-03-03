@@ -9,6 +9,7 @@ import (
 // UserComm interface consists of methods to users actions
 type UserComm interface {
 	AcceptFriendsRequest(ctx context.Context, userSenderID uuid.UUID, userReceiverID uuid.UUID) error
+	DeclineFriendsRequest(ctx context.Context, userSenderID uuid.UUID, userID uuid.UUID) error
 	GetFriends(ctx context.Context, userID uuid.UUID) ([]models.User, error)
 	SendFriendsRequest(ctx context.Context, userSender uuid.UUID, userReceiver uuid.UUID) error
 	FindUser(ctx context.Context, userEmail string) (models.User, error)
@@ -28,6 +29,11 @@ func NewUserCommSrv(repo UserComm) *UserCommSrv {
 // AcceptFriendsRequest used to accept friends request
 func (s *UserCommSrv) AcceptFriendsRequest(ctx context.Context, userSenderID uuid.UUID, userReceiverID uuid.UUID) error {
 	return s.repo.AcceptFriendsRequest(ctx, userSenderID, userReceiverID)
+}
+
+// DeclineFriendsRequest used to accept friends request
+func (s *UserCommSrv) DeclineFriendsRequest(ctx context.Context, userSenderID uuid.UUID, userID uuid.UUID) error {
+	return s.repo.DeclineFriendsRequest(ctx, userSenderID, userID)
 }
 
 // GetFriends used send users friends

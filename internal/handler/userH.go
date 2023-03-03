@@ -8,16 +8,8 @@ import (
 	"net/http"
 )
 
-type RequestBody struct {
-	SenderID     uuid.UUID     `json:"senderID"`
-	ReceiverID   uuid.UUID     `json:"receiverID"`
-	UserEmail    string        `json:"userEmail"`
-	UsersInvited []models.User `json:"usersInvited"`
-	statusID     int           `json:"statusID"`
-}
-
 func (h *Handler) AcceptFriendsRequest(ctx echo.Context) error {
-	var reqBody RequestBody
+	var reqBody models.Friends
 	err := ctx.Bind(&reqBody)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
@@ -27,7 +19,7 @@ func (h *Handler) AcceptFriendsRequest(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "data not correct")
 	}
 	userID := ctx.Get("user_id").(uuid.UUID)
-	err = h.userS.AcceptFriendsRequest(ctx.Request().Context(), reqBody.SenderID, userID)
+	err = h.userS.AcceptFriendsRequest(ctx.Request().Context(), reqBody.UserSender, userID)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"Error while accepting request": err,
@@ -35,6 +27,25 @@ func (h *Handler) AcceptFriendsRequest(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "accept failed")
 	}
 	return ctx.String(http.StatusOK, "request accepted")
+}
+
+func (h *Handler) DeclineFriendsRequest(ctx echo.Context) error {
+	var reqBody models.Friends
+	err := ctx.Bind(&reqBody)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"Error Bind json while decline": err,
+			"user sender":                   reqBody,
+		}).Errorf("Bind json %s", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "data not correct")
+	}
+	userID := ctx.Get("user_id").(uuid.UUID)
+	err = h.userS.DeclineFriendsRequest(ctx.Request().Context(), reqBody.UserSender, userID)
+	if err != nil {
+		logrus.Errorf("Decline request, %s", err)
+		return echo.NewHTTPError(http.StatusBadRequest, "decline failed")
+	}
+	return ctx.String(http.StatusOK, "request decline")
 }
 
 func (h *Handler) GetFriends(ctx echo.Context) error {
@@ -51,7 +62,7 @@ func (h *Handler) GetFriends(ctx echo.Context) error {
 }
 
 func (h *Handler) SendFriendsRequest(ctx echo.Context) error {
-	var reqBody RequestBody
+	var reqBody models.Friends
 	errBind := ctx.Bind(&reqBody)
 	if errBind != nil {
 		logrus.WithFields(logrus.Fields{
@@ -61,7 +72,7 @@ func (h *Handler) SendFriendsRequest(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "data not correct")
 	}
 	userID := ctx.Get("user_id").(uuid.UUID)
-	err := h.userS.SendFriendsRequest(ctx.Request().Context(), userID, reqBody.ReceiverID)
+	err := h.userS.SendFriendsRequest(ctx.Request().Context(), userID, reqBody.UserReceiver)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"Error while send friends request": err,
@@ -72,7 +83,7 @@ func (h *Handler) SendFriendsRequest(ctx echo.Context) error {
 }
 
 func (h *Handler) FindUser(ctx echo.Context) error {
-	var reqBody RequestBody
+	var reqBody models.UserFind
 	errBind := ctx.Bind(&reqBody)
 	if errBind != nil {
 		logrus.WithFields(logrus.Fields{

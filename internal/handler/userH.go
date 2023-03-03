@@ -37,6 +37,25 @@ func (h *Handler) AcceptFriendsRequest(ctx echo.Context) error {
 	return ctx.String(http.StatusOK, "request accepted")
 }
 
+func (h *Handler) DeclineFriendsRequest(ctx echo.Context) error {
+	var reqBody RequestBody
+	err := ctx.Bind(&reqBody)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"Error Bind json while decline": err,
+			"user sender":                   reqBody,
+		}).Errorf("Bind json %s", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "data not correct")
+	}
+	userID := ctx.Get("user_id").(uuid.UUID)
+	err = h.userS.DeclineFriendsRequest(ctx.Request().Context(), reqBody.SenderID, userID)
+	if err != nil {
+		logrus.Errorf("Decline request, %s", err)
+		return echo.NewHTTPError(http.StatusBadRequest, "decline failed")
+	}
+	return ctx.String(http.StatusOK, "request decline")
+}
+
 func (h *Handler) GetFriends(ctx echo.Context) error {
 	userID := ctx.Get("user_id").(uuid.UUID)
 	friends, err := h.userS.GetFriends(ctx.Request().Context(), userID)

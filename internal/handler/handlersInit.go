@@ -17,6 +17,7 @@ type UserComm interface {
 	GetFriends(ctx context.Context, userID uuid.UUID) ([]models.User, error)
 	SendFriendsRequest(ctx context.Context, userSender uuid.UUID, userReceiver uuid.UUID) error
 	AcceptFriendsRequest(ctx context.Context, userSenderID uuid.UUID, userReceiverID uuid.UUID) error
+	DeclineFriendsRequest(ctx context.Context, userSenderID uuid.UUID, userID uuid.UUID) error
 	FindUser(ctx context.Context, userEmail string) (models.User, error)
 	GetRequest(ctx context.Context, userID uuid.UUID) ([]models.User, error)
 }
@@ -24,7 +25,6 @@ type UserComm interface {
 // Authorization service consists of methods fo user
 type Authorization interface {
 	SignUp(ctx context.Context, user *models.User) error
-	GetUser(ctx context.Context, id uuid.UUID) (models.User, error)
 	SignIn(ctx context.Context, user *models.User) (Tokens, error)
 	UpdateRefreshToken(context.Context, string, uuid.UUID) error
 }
@@ -51,12 +51,12 @@ func (h *Handler) InitRoutes(router *echo.Echo) *echo.Echo {
 	rAuth.POST("/refreshToken", h.RefreshToken)
 	rAuth.POST("/createUser", h.SignUp)
 	rAuth.POST("/signIn", h.SignIn)
-	rAuth.POST("/getUserAuth", h.GetUserAuth)
 	rUserComm := router.Group("/userComm")
 	rUserComm.Use(middleware.Logger())
 	rUserComm.POST("/getFriends", h.GetFriends)
 	rUserComm.GET("/getFriendsRequest", h.SendFriendsRequest)
 	rUserComm.POST("/acceptFriendsRequest", h.AcceptFriendsRequest)
+	rUserComm.POST("/declineFriendsRequest", h.DeclineFriendsRequest)
 	rUserComm.GET("/findFriend", h.FindUser)
 	rUserComm.GET("/sendRequest", h.GetRequest)
 	router.Logger.Fatal(router.Start(":40000"))

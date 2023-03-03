@@ -3,7 +3,6 @@ package handler
 import (
 	"cmdMS/internal/utils"
 	"cmdMS/models"
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -47,19 +46,6 @@ func (h *Handler) SignIn(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnauthorized, "wrong data")
 	}
 	return c.JSON(http.StatusOK, &tokens)
-}
-
-func (h *Handler) GetUserAuth(c echo.Context) error {
-	userID := c.Get("user_id").(uuid.UUID)
-	user, err := h.authS.GetUser(c.Request().Context(), userID)
-	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"Error get user": err,
-			"user":           user,
-		}).Errorf("GET USER request, %s", err)
-		return echo.NewHTTPError(http.StatusBadRequest, "sign up please")
-	}
-	return c.JSON(http.StatusOK, user)
 }
 
 func (h *Handler) RefreshToken(c echo.Context) error {

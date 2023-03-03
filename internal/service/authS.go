@@ -14,7 +14,6 @@ import (
 type Authorization interface {
 	SignUp(ctx context.Context, user *models.User) error
 	SignIn(ctx context.Context, user *models.User) (handler.Tokens, error)
-	GetUserByID(context.Context, uuid.UUID) (models.User, error)
 	UpdateRefreshToken(context.Context, string, uuid.UUID) error
 }
 
@@ -39,15 +38,6 @@ func (s *AuthService) SignUp(ctx context.Context, user *models.User) error {
 		return fmt.Errorf("error create auth user %w", err)
 	}
 	return nil
-}
-
-// GetUserVerified used to get user
-func (s *AuthService) GetUser(ctx context.Context, id uuid.UUID) (models.User, error) {
-	user, err := s.repo.GetUserByID(ctx, id)
-	if err != nil {
-		return models.User{}, fmt.Errorf("error while getting user, %s", err)
-	}
-	return user, nil
 }
 
 // SignIn used to sign in user

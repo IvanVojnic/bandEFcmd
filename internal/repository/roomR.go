@@ -39,20 +39,42 @@ func (r *RoomMS) GetRooms(ctx context.Context, userID uuid.UUID) (*[]models.Room
 		*rooms = append(*rooms, models.Room{ID: roomID, Place: room.Place, Date: date, UserCreatorID: userCreatorID})
 	}
 	if errGRPC != nil {
-		return rooms, fmt.Errorf("error while sign up, %s", errGRPC)
+		return rooms, fmt.Errorf("error while getting rooms, %s", errGRPC)
 	}
 	return rooms, nil
 }
 
 func (r *RoomMS) GetRoomUsers(ctx context.Context, roomID uuid.UUID) (*[]models.User, error) {
 	var users *[]models.User
-
+	res, err := r.client.GetUsersRoom(ctx, &pr.GetUsersRoomRequest{RoomID: roomID.String()})
+	for _, user := range res.Users {
+		userID, err := uuid.Parse(user.ID)
+		if err != nil {
+			return users, fmt.Errorf("error while parsing room ID, %s", err)
+		}
+		*users = append(*users, models.User{ID: userID, Name: user.Name, Email: user.Email})
+	}
+	if err != nil {
+		return users, fmt.Errorf("error while getting users for current room, %s", err)
+	}
 	return users, nil
 }
 
 // SendInvite used to send request to be a friends
 func (r *RoomMS) SendInvite(ctx context.Context, userCreatorID uuid.UUID, usersID *[]uuid.UUID, place string, date time.Time) error {
-
+	var users *[]models.User
+	res, err := r.client.(ctx, &pr.GetUsersRoomRequest{RoomID: roomID.String()})
+	for _, user := range res.Users {
+		userID, err := uuid.Parse(user.ID)
+		if err != nil {
+			return users, fmt.Errorf("error while parsing room ID, %s", err)
+		}
+		*users = append(*users, models.User{ID: userID, Name: user.Name, Email: user.Email})
+	}
+	if err != nil {
+		return users, fmt.Errorf("error while getting users for current room, %s", err)
+	}
+	return users, nil
 	return nil
 }
 

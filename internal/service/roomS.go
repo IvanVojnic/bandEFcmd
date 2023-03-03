@@ -10,7 +10,7 @@ import (
 type RoomInvite interface {
 	SendInvite(ctx context.Context, userCreatorID uuid.UUID, usersID *[]uuid.UUID, place string, date time.Time) error
 	AcceptInvite(ctx context.Context, userID uuid.UUID, roomID uuid.UUID) error
-	DeclineInvite(ctx context.Context, userID uuid.UUID, roomID uuid.UUID, status int) error
+	DeclineInvite(ctx context.Context, userID uuid.UUID, roomID uuid.UUID) error
 	GetRooms(ctx context.Context, user uuid.UUID) (*[]models.Room, error)
 	GetRoomUsers(ctx context.Context, roomID uuid.UUID) (*[]models.User, error)
 }
@@ -26,23 +26,21 @@ func NewRoomInviteService(repo RoomInvite) *RoomInviteService {
 }
 
 func (s *RoomInviteService) SendInvite(ctx context.Context, userCreatorID uuid.UUID, usersID *[]uuid.UUID, place string, date time.Time) error {
-	return nil
+	return s.repo.SendInvite(ctx, userCreatorID, usersID, place, date)
 }
 
 func (s *RoomInviteService) AcceptInvite(ctx context.Context, userID uuid.UUID, roomID uuid.UUID) error {
-	return nil
+	return s.repo.AcceptInvite(ctx, userID, roomID)
 }
 
-func (s *RoomInviteService) DeclineInvite(ctx context.Context, userID uuid.UUID, roomID uuid.UUID, status int) error {
-	return nil
+func (s *RoomInviteService) DeclineInvite(ctx context.Context, userID uuid.UUID, roomID uuid.UUID) error {
+	return s.repo.DeclineInvite(ctx, userID, roomID)
 }
 
 func (s *RoomInviteService) GetRooms(ctx context.Context, user uuid.UUID) (*[]models.Room, error) {
-	var rooms *[]models.Room
-	return rooms, nil
+	return s.repo.GetRooms(ctx, user)
 }
 
 func (s *RoomInviteService) GetRoomUsers(ctx context.Context, roomID uuid.UUID) (*[]models.User, error) {
-	var users *[]models.User
-	return users, nil
+	return s.repo.GetRoomUsers(ctx, roomID)
 }

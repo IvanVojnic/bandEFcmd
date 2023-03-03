@@ -20,8 +20,8 @@ func NewRoomMS(client pr.RoomClient) *RoomMS {
 }
 
 // GetRooms used to get rooms where you had invited
-func (r *RoomMS) GetRooms(ctx context.Context, userID uuid.UUID) ([]models.Room, error) {
-	var rooms []models.Room
+func (r *RoomMS) GetRooms(ctx context.Context, userID uuid.UUID) (*[]models.Room, error) {
+	var rooms *[]models.Room
 	res, errGRPC := r.client.GetRooms(ctx, &pr.GetRoomsRequest{UserID: userID.String()})
 	for _, room := range res.Rooms {
 		roomID, errRoomID := uuid.Parse(room.RoomID)
@@ -36,7 +36,7 @@ func (r *RoomMS) GetRooms(ctx context.Context, userID uuid.UUID) ([]models.Room,
 		if errUserID != nil {
 			return rooms, fmt.Errorf("error while parsing user ID, %s", errUserID)
 		}
-		rooms = append(rooms, models.Room{ID: roomID, Place: room.Place, Date: date, UserCreatorID: userCreatorID})
+		*rooms = append(*rooms, models.Room{ID: roomID, Place: room.Place, Date: date, UserCreatorID: userCreatorID})
 	}
 	if errGRPC != nil {
 		return rooms, fmt.Errorf("error while sign up, %s", errGRPC)
@@ -44,26 +44,26 @@ func (r *RoomMS) GetRooms(ctx context.Context, userID uuid.UUID) ([]models.Room,
 	return rooms, nil
 }
 
-func (r *RoomMS) GetUsersRoom(ctx context.Context, roomID uuid.UUID) ([]uuid.UUID, error) {
-	var usersID []uuid.UUID
+func (r *RoomMS) GetRoomUsers(ctx context.Context, roomID uuid.UUID) (*[]models.User, error) {
+	var users *[]models.User
 
-	return usersID, nil
+	return users, nil
 }
 
 // SendInvite used to send request to be a friends
-func (r *RoomMS) SendInvite(ctx context.Context, users []models.User, roomID uuid.UUID, creatorID uuid.UUID) error {
+func (r *RoomMS) SendInvite(ctx context.Context, userCreatorID uuid.UUID, usersID *[]uuid.UUID, place string, date time.Time) error {
 
 	return nil
 }
 
 // AcceptInvite used to accept invite to the room
-func (r *RoomMS) AcceptInvite(ctx context.Context, userID uuid.UUID, roomID uuid.UUID, status int) error {
+func (r *RoomMS) AcceptInvite(ctx context.Context, userID uuid.UUID, roomID uuid.UUID) error {
 
 	return nil
 }
 
 // DeclineInvite used to accept invite to the room
-func (r *RoomMS) DeclineInvite(ctx context.Context, userID uuid.UUID, roomID uuid.UUID, status int) error {
+func (r *RoomMS) DeclineInvite(ctx context.Context, userID uuid.UUID, roomID uuid.UUID) error {
 
 	return nil
 }

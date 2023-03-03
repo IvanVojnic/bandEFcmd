@@ -10,6 +10,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // UserComm service consists of methods of user actions
@@ -25,23 +26,26 @@ type UserComm interface {
 // Authorization service consists of methods fo user
 type Authorization interface {
 	SignUp(ctx context.Context, user *models.User) error
-	SignIn(ctx context.Context, user *models.User) (Tokens, error)
+	SignIn(ctx context.Context, user *models.User) (models.Tokens, error)
 	UpdateRefreshToken(context.Context, string, uuid.UUID) error
+}
+
+type RoomInvite interface {
+	SendInvite(ctx context.Context, userCreatorID uuid.UUID, usersID *[]uuid.UUID, place string, date time.Time) error
+	AcceptInvite(ctx context.Context, userID uuid.UUID, roomID uuid.UUID) error
+	DeclineInvite(ctx context.Context, userID uuid.UUID, roomID uuid.UUID, status int) error
+	GetRooms(ctx context.Context, user uuid.UUID) (*[]models.Room, error)
+	GetRoomUsers(ctx context.Context, roomID uuid.UUID) (*[]models.User, error)
 }
 
 type Handler struct {
 	authS Authorization
 	userS UserComm
+	roomS RoomInvite
 }
 
-// Tokens used to define at and rt
-type Tokens struct {
-	AccessToken  string `json:"access"`
-	RefreshToken string `json:"refresh"`
-}
-
-func NewHandler(authS Authorization, users UserComm) *Handler {
-	return &Handler{authS: authS, userS: users}
+func NewHandler(authS Authorization, userS UserComm, roomS RoomInvite) *Handler {
+	return &Handler{authS: authS, userS: userS, roomS: roomS}
 }
 
 // InitRoutes used to init routes.txt
@@ -59,6 +63,12 @@ func (h *Handler) InitRoutes(router *echo.Echo) *echo.Echo {
 	rUserComm.POST("/declineFriendsRequest", h.DeclineFriendsRequest)
 	rUserComm.GET("/findFriend", h.FindUser)
 	rUserComm.GET("/sendRequest", h.GetRequest)
+	rRoom := router.Group("/room")
+	rRoom.POST("/sendInvite", h.SendInvite)
+	rRoom.POST("/acceptInvite", h.AcceptInvite)
+	rRoom.POST("/declineInvite", h.DeclineInvite)
+	rRoom.POST("/getRooms", h.GetRooms)
+	rRoom.POST("/getRoomUsers", h.GetRoomUsers)
 	router.Logger.Fatal(router.Start(":40000"))
 	return router
 }
@@ -69,7 +79,7 @@ func jwtAuthMiddleware() echo.MiddlewareFunc {
 			if c.Path() == "/auth/createUser" || c.Path() == "/auth/signIn" || c.Path() == "/auth/refreshToken" {
 				return next(c)
 			}
-			var tokens Tokens
+			var tokens models.Tokens
 			req := c.Request()
 			headers := req.Header
 			atHeader := headers.Get("Authorization")

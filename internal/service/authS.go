@@ -1,7 +1,6 @@
 package service
 
 import (
-	"cmdMS/internal/handler"
 	"cmdMS/models"
 	"context"
 	"fmt"
@@ -13,7 +12,7 @@ import (
 // Authorization interface consists of methos to communicate with user repo
 type Authorization interface {
 	SignUp(ctx context.Context, user *models.User) error
-	SignIn(ctx context.Context, user *models.User) (handler.Tokens, error)
+	SignIn(ctx context.Context, user *models.User) (models.Tokens, error)
 	UpdateRefreshToken(context.Context, string, uuid.UUID) error
 }
 
@@ -41,10 +40,10 @@ func (s *AuthService) SignUp(ctx context.Context, user *models.User) error {
 }
 
 // SignIn used to sign in user
-func (s *AuthService) SignIn(ctx context.Context, user *models.User) (handler.Tokens, error) {
+func (s *AuthService) SignIn(ctx context.Context, user *models.User) (models.Tokens, error) {
 	tokens, err := s.repo.SignIn(ctx, user)
 	if err != nil {
-		return handler.Tokens{}, fmt.Errorf("error while sign in query %w", err)
+		return models.Tokens{}, fmt.Errorf("error while sign in query %w", err)
 	}
 	return tokens, nil
 }

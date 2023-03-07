@@ -61,7 +61,7 @@ func (h *Handler) RefreshToken(c echo.Context) error {
 		}).Errorf("get user ID from token, %s", errRT)
 		return echo.NewHTTPError(http.StatusUnauthorized, "login please")
 	}
-	newAt, errAT := utils.GenerateToken(userID, utils.TokenATDuretion)
+	newAt, errAT := utils.GenerateToken(userID, utils.TokenATDuration)
 	if errAT != nil {
 		logrus.WithFields(logrus.Fields{
 			"new Access token": newAt,

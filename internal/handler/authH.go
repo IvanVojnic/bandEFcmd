@@ -33,38 +33,40 @@ func (h *Handler) SignIn(c echo.Context) error {
 	errBind := c.Bind(&user)
 	if errBind != nil {
 		logrus.WithFields(logrus.Fields{
-			"Error Bind json while creating user": errBind,
-			"user":                                user,
+			"user": user,
 		}).Errorf("Bind json, %s", errBind)
 		return echo.NewHTTPError(http.StatusInternalServerError, "data not correct")
 	}
 	tokens, err := h.authS.SignIn(c.Request().Context(), &user)
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"Error sign in user": err,
-		}).Errorf("SIGN IN USER request, %s", err)
+		logrus.Errorf("SIGN IN USER request, %s", err)
 		return echo.NewHTTPError(http.StatusUnauthorized, "wrong data")
 	}
 	return c.JSON(http.StatusOK, &tokens)
 }
 
 func (h *Handler) RefreshToken(c echo.Context) error {
-	var tokens Tokens
+	var tokens models.Tokens
 	errBind := c.Bind(&tokens)
 	if errBind != nil {
 		logrus.WithFields(logrus.Fields{
-			"Error get tokens": errBind,
-			"tokens":           tokens,
+			"tokens": tokens,
 		}).Errorf("Refresh tokens request, %s", errBind)
 		return echo.NewHTTPError(http.StatusInternalServerError, "cannot bind")
 	}
 	userID, errRT := utils.ParseToken(tokens.RefreshToken)
 	if errRT != nil {
+		logrus.WithFields(logrus.Fields{
+			"userID": userID,
+		}).Errorf("get user ID from token, %s", errRT)
 		return echo.NewHTTPError(http.StatusUnauthorized, "login please")
 	}
 	newAt, errAT := utils.GenerateToken(userID, utils.TokenATDuretion)
 	if errAT != nil {
+		logrus.WithFields(logrus.Fields{
+			"new Access token": newAt,
+		}).Errorf("generate access token, %s", errRT)
 		return echo.NewHTTPError(http.StatusInternalServerError, "cannot bind")
 	}
-	return c.JSON(http.StatusOK, Tokens{AccessToken: newAt, RefreshToken: tokens.RefreshToken})
+	return c.JSON(http.StatusOK, models.Tokens{AccessToken: newAt, RefreshToken: tokens.RefreshToken})
 }

@@ -1,10 +1,13 @@
+// Package repository define methods for user comm using userMS
 package repository
 
 import (
 	"cmdMS/models"
 	"context"
 	"fmt"
+
 	pr "github.com/IvanVojnic/bandEFuser/proto"
+
 	"github.com/google/uuid"
 )
 
@@ -31,7 +34,7 @@ func (r *UserMS) SignUp(ctx context.Context, user *models.User) error {
 	return fmt.Errorf("cannot create user")
 }
 
-// SignInUser used to sign in user
+// SignIn used to sign in user
 func (r *UserMS) SignIn(ctx context.Context, user *models.User) (models.Tokens, error) {
 	res, errGRPC := r.clientAuth.SignIn(ctx, &pr.SignInRequest{Name: user.Name, Password: user.Password})
 	if errGRPC != nil {
@@ -43,13 +46,12 @@ func (r *UserMS) SignIn(ctx context.Context, user *models.User) (models.Tokens, 
 
 // UpdateRefreshToken used to update rt
 func (r *UserMS) UpdateRefreshToken(ctx context.Context, rt string, id uuid.UUID) error {
-
 	return nil
 }
 
 // GetFriends used to send friends
-func (r *UserMS) GetFriends(ctx context.Context, userID uuid.UUID) ([]models.User, error) {
-	users := make([]models.User, 0)
+func (r *UserMS) GetFriends(ctx context.Context, userID uuid.UUID) ([]*models.User, error) { // nolint:dupl, gocritic
+	users := make([]*models.User, 0)
 	res, errGRPC := r.clientComm.GetFriends(ctx, &pr.GetFriendsRequest{UserID: userID.String()})
 	if errGRPC != nil {
 		return users, fmt.Errorf("error while getting friends, %s", errGRPC)
@@ -60,13 +62,13 @@ func (r *UserMS) GetFriends(ctx context.Context, userID uuid.UUID) ([]models.Use
 			return users, fmt.Errorf("error while getting friends, %s", errParse)
 		}
 		user := models.User{ID: friendID, Name: res.Friends[i].Name, Email: res.Friends[i].Email}
-		users = append(users, user)
+		users = append(users, &user)
 	}
 	return users, nil
 }
 
 // SendFriendsRequest used to send requests for user
-func (r *UserMS) SendFriendsRequest(ctx context.Context, userSender uuid.UUID, userReceiver uuid.UUID) error {
+func (r *UserMS) SendFriendsRequest(ctx context.Context, userSender, userReceiver uuid.UUID) error {
 	_, errGRPC := r.clientComm.SendFriendRequest(ctx, &pr.SendFriendRequestReq{UserID: userSender.String(), ReceiverID: userReceiver.String()})
 	if errGRPC != nil {
 		return fmt.Errorf("error while send request to be a friend, %s", errGRPC)
@@ -75,7 +77,7 @@ func (r *UserMS) SendFriendsRequest(ctx context.Context, userSender uuid.UUID, u
 }
 
 // AcceptFriendsRequest used to accept request
-func (r *UserMS) AcceptFriendsRequest(ctx context.Context, userSenderID uuid.UUID, userID uuid.UUID) error {
+func (r *UserMS) AcceptFriendsRequest(ctx context.Context, userSenderID, userID uuid.UUID) error { // nolint:dupl, gocritic
 	_, errGRPC := r.clientComm.AcceptFriendsRequest(ctx, &pr.AcceptFriendsRequestReq{UserSenderID: userSenderID.String(), UserID: userID.String()})
 	if errGRPC != nil {
 		return fmt.Errorf("error while accepting request to be a friend, %s", errGRPC)
@@ -84,7 +86,7 @@ func (r *UserMS) AcceptFriendsRequest(ctx context.Context, userSenderID uuid.UUI
 }
 
 // DeclineFriendsRequest used to accept request
-func (r *UserMS) DeclineFriendsRequest(ctx context.Context, userSenderID uuid.UUID, userID uuid.UUID) error {
+func (r *UserMS) DeclineFriendsRequest(ctx context.Context, userSenderID, userID uuid.UUID) error { // nolint:dupl, gocritic
 	_, errGRPC := r.clientComm.DeclineFriendsRequest(ctx, &pr.DeclineFriendsRequestReq{UserSenderID: userSenderID.String(), UserID: userID.String()})
 	if errGRPC != nil {
 		return fmt.Errorf("error while decline request to be a friend, %s", errGRPC)
@@ -108,8 +110,8 @@ func (r *UserMS) FindUser(ctx context.Context, userEmail string) (models.User, e
 }
 
 // GetRequest used to send request to be a friends
-func (r *UserMS) GetRequest(ctx context.Context, userID uuid.UUID) ([]models.User, error) {
-	users := make([]models.User, 0)
+func (r *UserMS) GetRequest(ctx context.Context, userID uuid.UUID) ([]*models.User, error) { // nolint:dupl, gocritic
+	users := make([]*models.User, 0)
 	res, errGRPC := r.clientComm.GetRequest(ctx, &pr.GetRequestReq{UserID: userID.String()})
 	if errGRPC != nil {
 		return users, fmt.Errorf("error while getting requests to be a friend, %s", errGRPC)
@@ -120,7 +122,7 @@ func (r *UserMS) GetRequest(ctx context.Context, userID uuid.UUID) ([]models.Use
 			return users, fmt.Errorf("error while getting requests to be a friend, %s", errParse)
 		}
 		user := models.User{ID: friendID, Name: res.Users[i].Name, Email: res.Users[i].Email}
-		users = append(users, user)
+		users = append(users, &user)
 	}
 	return users, nil
 }

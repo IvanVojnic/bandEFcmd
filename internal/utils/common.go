@@ -1,3 +1,4 @@
+// Package utils used to verify tokens
 package utils
 
 import (

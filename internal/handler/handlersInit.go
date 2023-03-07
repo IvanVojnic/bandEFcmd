@@ -1,49 +1,55 @@
+// Package handler handlers init
 package handler
 
 import (
-	"cmdMS/internal/errorwrapper"
-	"cmdMS/internal/utils"
-	"cmdMS/models"
 	"context"
-	"github.com/google/uuid"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"net/http"
 	"strings"
 	"time"
+
+	"cmdMS/internal/errorwrapper"
+	"cmdMS/internal/utils"
+	"cmdMS/models"
+
+	"github.com/google/uuid"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 // UserComm service consists of methods of user actions
 type UserComm interface {
-	GetFriends(ctx context.Context, userID uuid.UUID) ([]models.User, error)
-	SendFriendsRequest(ctx context.Context, userSender uuid.UUID, userReceiver uuid.UUID) error
-	AcceptFriendsRequest(ctx context.Context, userSenderID uuid.UUID, userReceiverID uuid.UUID) error
-	DeclineFriendsRequest(ctx context.Context, userSenderID uuid.UUID, userID uuid.UUID) error
+	GetFriends(ctx context.Context, userID uuid.UUID) ([]*models.User, error)
+	SendFriendsRequest(ctx context.Context, userSender, userReceiver uuid.UUID) error
+	AcceptFriendsRequest(ctx context.Context, userSenderID, userReceiverID uuid.UUID) error
+	DeclineFriendsRequest(ctx context.Context, userSenderID, userID uuid.UUID) error
 	FindUser(ctx context.Context, userEmail string) (models.User, error)
-	GetRequest(ctx context.Context, userID uuid.UUID) ([]models.User, error)
+	GetRequest(ctx context.Context, userID uuid.UUID) ([]*models.User, error)
 }
 
-// Authorization service consists of methods fo user
+// Authorization service consists of methods for user
 type Authorization interface {
 	SignUp(ctx context.Context, user *models.User) error
 	SignIn(ctx context.Context, user *models.User) (models.Tokens, error)
 	UpdateRefreshToken(context.Context, string, uuid.UUID) error
 }
 
+// RoomInvite service consists of methods for rooms invites
 type RoomInvite interface {
-	SendInvite(ctx context.Context, userCreatorID uuid.UUID, usersID *[]uuid.UUID, place string, date time.Time) error
-	AcceptInvite(ctx context.Context, userID uuid.UUID, roomID uuid.UUID) error
-	DeclineInvite(ctx context.Context, userID uuid.UUID, roomID uuid.UUID) error
-	GetRooms(ctx context.Context, user uuid.UUID) (*[]models.Room, error)
-	GetRoomUsers(ctx context.Context, roomID uuid.UUID) (*[]models.User, error)
+	SendInvite(ctx context.Context, userCreatorID uuid.UUID, usersID []*uuid.UUID, place string, date time.Time) error
+	AcceptInvite(ctx context.Context, userID, roomID uuid.UUID) error
+	DeclineInvite(ctx context.Context, userID, roomID uuid.UUID) error
+	GetRooms(ctx context.Context, user uuid.UUID) ([]*models.Room, error)
+	GetRoomUsers(ctx context.Context, roomID uuid.UUID) ([]*models.User, error)
 }
 
+// Handler object consists of handlers
 type Handler struct {
 	authS Authorization
 	userS UserComm
 	roomS RoomInvite
 }
 
+// NewHandler used to init Handler obj
 func NewHandler(authS Authorization, userS UserComm, roomS RoomInvite) *Handler {
 	return &Handler{authS: authS, userS: userS, roomS: roomS}
 }

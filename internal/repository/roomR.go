@@ -1,13 +1,15 @@
+// Package repository define methods for rooms and invites using RoomMS
 package repository
 
 import (
 	"cmdMS/models"
 	"context"
 	"fmt"
-	pr "github.com/IvanVojnic/bandEFroom/proto"
-	"github.com/google/uuid"
-
 	"time"
+
+	pr "github.com/IvanVojnic/bandEFroom/proto"
+
+	"github.com/google/uuid"
 )
 
 // RoomMS has an internal grpc object
@@ -22,8 +24,8 @@ func NewRoomMS(clientRoom pr.RoomClient, clientInvite pr.InviteClient) *RoomMS {
 }
 
 // GetRooms used to get rooms where you had invited
-func (r *RoomMS) GetRooms(ctx context.Context, userID uuid.UUID) (*[]models.Room, error) {
-	var rooms *[]models.Room
+func (r *RoomMS) GetRooms(ctx context.Context, userID uuid.UUID) ([]*models.Room, error) {
+	rooms := make([]*models.Room, 0)
 	res, errGRPC := r.clientRoom.GetRooms(ctx, &pr.GetRoomsRequest{UserID: userID.String()})
 	for _, room := range res.Rooms {
 		roomID, errRoomID := uuid.Parse(room.RoomID)
@@ -38,7 +40,7 @@ func (r *RoomMS) GetRooms(ctx context.Context, userID uuid.UUID) (*[]models.Room
 		if errUserID != nil {
 			return rooms, fmt.Errorf("error while parsing user ID, %s", errUserID)
 		}
-		*rooms = append(*rooms, models.Room{ID: roomID, Place: room.Place, Date: date, UserCreatorID: userCreatorID})
+		rooms = append(rooms, &models.Room{ID: roomID, Place: room.Place, Date: date, UserCreatorID: userCreatorID})
 	}
 	if errGRPC != nil {
 		return rooms, fmt.Errorf("error while getting rooms, %s", errGRPC)
@@ -46,15 +48,16 @@ func (r *RoomMS) GetRooms(ctx context.Context, userID uuid.UUID) (*[]models.Room
 	return rooms, nil
 }
 
-func (r *RoomMS) GetRoomUsers(ctx context.Context, roomID uuid.UUID) (*[]models.User, error) {
-	var users *[]models.User
+// GetRoomUsers used to get users from current room
+func (r *RoomMS) GetRoomUsers(ctx context.Context, roomID uuid.UUID) ([]*models.User, error) {
+	users := make([]*models.User, 0)
 	res, err := r.clientRoom.GetUsersRoom(ctx, &pr.GetUsersRoomRequest{RoomID: roomID.String()})
 	for _, user := range res.Users {
-		userID, err := uuid.Parse(user.ID)
-		if err != nil {
-			return users, fmt.Errorf("error while parsing room ID, %s", err)
+		userID, errParse := uuid.Parse(user.ID)
+		if errParse != nil {
+			return users, fmt.Errorf("error while parsing room ID, %s", errParse)
 		}
-		*users = append(*users, models.User{ID: userID, Name: user.Name, Email: user.Email})
+		users = append(users, &models.User{ID: userID, Name: user.Name, Email: user.Email})
 	}
 	if err != nil {
 		return users, fmt.Errorf("error while getting users for current room, %s", err)
@@ -63,9 +66,9 @@ func (r *RoomMS) GetRoomUsers(ctx context.Context, roomID uuid.UUID) (*[]models.
 }
 
 // SendInvite used to send request to be a friends
-func (r *RoomMS) SendInvite(ctx context.Context, userCreatorID uuid.UUID, usersID *[]uuid.UUID, place string, date time.Time) error {
-	var users []string
-	for _, user := range *usersID {
+func (r *RoomMS) SendInvite(ctx context.Context, userCreatorID uuid.UUID, usersID []*uuid.UUID, place string, date time.Time) error {
+	users := make([]string, 0)
+	for _, user := range usersID {
 		userID := user.String()
 		users = append(users, userID)
 	}
@@ -77,7 +80,7 @@ func (r *RoomMS) SendInvite(ctx context.Context, userCreatorID uuid.UUID, usersI
 }
 
 // AcceptInvite used to accept invite to the room
-func (r *RoomMS) AcceptInvite(ctx context.Context, userID uuid.UUID, roomID uuid.UUID) error {
+func (r *RoomMS) AcceptInvite(ctx context.Context, userID, roomID uuid.UUID) error { // nolint:dupl, gocritic
 	_, err := r.clientInvite.AcceptInvite(ctx, &pr.AcceptInviteRequest{RoomID: roomID.String(), UserID: userID.String()})
 	if err != nil {
 		return fmt.Errorf("error while sending invite to users for current room, %s", err)
@@ -86,7 +89,7 @@ func (r *RoomMS) AcceptInvite(ctx context.Context, userID uuid.UUID, roomID uuid
 }
 
 // DeclineInvite used to accept invite to the room
-func (r *RoomMS) DeclineInvite(ctx context.Context, userID uuid.UUID, roomID uuid.UUID) error {
+func (r *RoomMS) DeclineInvite(ctx context.Context, userID, roomID uuid.UUID) error { // nolint:dupl, gocritic
 	_, err := r.clientInvite.DeclineInvite(ctx, &pr.DeclineInviteRequest{RoomID: roomID.String(), UserID: userID.String()})
 	if err != nil {
 		return fmt.Errorf("error while sending invite to users for current room, %s", err)

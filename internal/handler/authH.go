@@ -1,13 +1,17 @@
+// Package handler users auth handlers
 package handler
 
 import (
+	"net/http"
+
 	"cmdMS/internal/utils"
 	"cmdMS/models"
+
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
-	"net/http"
 )
 
+// SignUp used to sign up using serv userS
 func (h *Handler) SignUp(c echo.Context) error {
 	user := models.User{}
 	errBind := c.Bind(&user)
@@ -28,6 +32,7 @@ func (h *Handler) SignUp(c echo.Context) error {
 	return c.String(http.StatusOK, "user created")
 }
 
+// SignIn used to sign in using serv userS
 func (h *Handler) SignIn(c echo.Context) error {
 	user := models.User{}
 	errBind := c.Bind(&user)
@@ -45,6 +50,7 @@ func (h *Handler) SignIn(c echo.Context) error {
 	return c.JSON(http.StatusOK, &tokens)
 }
 
+// RefreshToken used to refresh token by utils
 func (h *Handler) RefreshToken(c echo.Context) error {
 	var tokens models.Tokens
 	errBind := c.Bind(&tokens)

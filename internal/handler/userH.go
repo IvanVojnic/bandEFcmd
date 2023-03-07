@@ -1,14 +1,18 @@
+// Package handler users comm handlers
 package handler
 
 import (
+	"net/http"
+
 	"cmdMS/models"
+
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
-	"net/http"
 )
 
-func (h *Handler) AcceptFriendsRequest(ctx echo.Context) error {
+// AcceptFriendsRequest used to accept friends request
+func (h *Handler) AcceptFriendsRequest(ctx echo.Context) error { // nolint:dupl, gocritic
 	var reqBody models.Friends
 	err := ctx.Bind(&reqBody)
 	if err != nil {
@@ -26,7 +30,8 @@ func (h *Handler) AcceptFriendsRequest(ctx echo.Context) error {
 	return ctx.String(http.StatusOK, "request accepted")
 }
 
-func (h *Handler) DeclineFriendsRequest(ctx echo.Context) error {
+// DeclineFriendsRequest used to decline friends request
+func (h *Handler) DeclineFriendsRequest(ctx echo.Context) error { // nolint:dupl, gocritic
 	var reqBody models.Friends
 	err := ctx.Bind(&reqBody)
 	if err != nil {
@@ -44,7 +49,8 @@ func (h *Handler) DeclineFriendsRequest(ctx echo.Context) error {
 	return ctx.String(http.StatusOK, "request decline")
 }
 
-func (h *Handler) GetFriends(ctx echo.Context) error {
+// GetFriends used to get friends
+func (h *Handler) GetFriends(ctx echo.Context) error { // nolint:dupl, gocritic
 	userID := ctx.Get("user_id").(uuid.UUID)
 	friends, err := h.userS.GetFriends(ctx.Request().Context(), userID)
 	if err != nil {
@@ -56,7 +62,8 @@ func (h *Handler) GetFriends(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, friends)
 }
 
-func (h *Handler) SendFriendsRequest(ctx echo.Context) error {
+// SendFriendsRequest used to send friends request
+func (h *Handler) SendFriendsRequest(ctx echo.Context) error { // nolint:dupl, gocritic
 	var reqBody models.Friends
 	errBind := ctx.Bind(&reqBody)
 	if errBind != nil {
@@ -74,6 +81,7 @@ func (h *Handler) SendFriendsRequest(ctx echo.Context) error {
 	return ctx.String(http.StatusOK, "request sent")
 }
 
+// FindUser used to find user
 func (h *Handler) FindUser(ctx echo.Context) error {
 	var reqBody models.UserFind
 	errBind := ctx.Bind(&reqBody)
@@ -91,7 +99,8 @@ func (h *Handler) FindUser(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, user)
 }
 
-func (h *Handler) GetRequest(ctx echo.Context) error {
+// GetRequest used to get requests
+func (h *Handler) GetRequest(ctx echo.Context) error { // nolint:dupl, gocritic
 	userID := ctx.Get("user_id").(uuid.UUID)
 	users, err := h.userS.GetRequest(ctx.Request().Context(), userID)
 	if err != nil {

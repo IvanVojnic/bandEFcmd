@@ -1,20 +1,21 @@
+// package main used to start program
 package main
 
 import (
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"os"
 
 	"cmdMS/internal/handler"
 	"cmdMS/internal/repository"
 	"cmdMS/internal/service"
 
+	prRoom "github.com/IvanVojnic/bandEFroom/proto"
+	prUser "github.com/IvanVojnic/bandEFuser/proto"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/sirupsen/logrus"
-
-	prRoom "github.com/IvanVojnic/bandEFroom/proto"
-	prUser "github.com/IvanVojnic/bandEFuser/proto"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {

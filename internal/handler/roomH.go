@@ -1,14 +1,18 @@
+// Package handler room invite handlers
 package handler
 
 import (
+	"net/http"
+
 	"cmdMS/models"
+
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
-	"net/http"
 )
 
-func (h *Handler) SendInvite(ctx echo.Context) error {
+// SendInvite used to send invite
+func (h *Handler) SendInvite(ctx echo.Context) error { // nolint:dupl, gocritic
 	var reqBody models.SendInvite
 	err := ctx.Bind(&reqBody)
 	if err != nil {
@@ -26,7 +30,8 @@ func (h *Handler) SendInvite(ctx echo.Context) error {
 	return ctx.String(http.StatusOK, "invite sent")
 }
 
-func (h *Handler) AcceptInvite(ctx echo.Context) error {
+// AcceptInvite used to accept invite
+func (h *Handler) AcceptInvite(ctx echo.Context) error { // nolint:dupl, gocritic
 	var reqBody models.Invite
 	err := ctx.Bind(&reqBody)
 	if err != nil {
@@ -44,7 +49,8 @@ func (h *Handler) AcceptInvite(ctx echo.Context) error {
 	return ctx.String(http.StatusOK, "invite accepted")
 }
 
-func (h *Handler) DeclineInvite(ctx echo.Context) error {
+// DeclineInvite used to decline invite
+func (h *Handler) DeclineInvite(ctx echo.Context) error { // nolint:dupl, gocritic
 	var reqBody models.Invite
 	err := ctx.Bind(&reqBody)
 	if err != nil {
@@ -62,6 +68,7 @@ func (h *Handler) DeclineInvite(ctx echo.Context) error {
 	return ctx.String(http.StatusOK, "invite declined")
 }
 
+// GetRooms used to get rooms
 func (h *Handler) GetRooms(ctx echo.Context) error {
 	userID := ctx.Get("user_id").(uuid.UUID)
 	rooms, err := h.roomS.GetRooms(ctx.Request().Context(), userID)
@@ -72,6 +79,7 @@ func (h *Handler) GetRooms(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, &rooms)
 }
 
+// GetRoomUsers used to get users from current room
 func (h *Handler) GetRoomUsers(ctx echo.Context) error {
 	var reqBody models.Invite
 	err := ctx.Bind(&reqBody)

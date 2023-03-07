@@ -13,6 +13,7 @@ import (
 // RoomMS has an internal grpc object
 type RoomMS struct {
 	client pr.RoomClient
+	clientInvite
 }
 
 // NewRoomMS used to init RoomAP
@@ -64,7 +65,7 @@ func (r *RoomMS) GetRoomUsers(ctx context.Context, roomID uuid.UUID) (*[]models.
 // SendInvite used to send request to be a friends
 func (r *RoomMS) SendInvite(ctx context.Context, userCreatorID uuid.UUID, usersID *[]uuid.UUID, place string, date time.Time) error {
 	var users *[]models.User
-	res, err := r.client.(ctx, &pr.GetUsersRoomRequest{RoomID: roomID.String()})
+	res, err := r.client.
 	for _, user := range res.Users {
 		userID, err := uuid.Parse(user.ID)
 		if err != nil {

@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"cmdMS/internal/handler"
 	"cmdMS/models"
 	"context"
 	"fmt"
@@ -33,13 +32,13 @@ func (r *UserMS) SignUp(ctx context.Context, user *models.User) error {
 }
 
 // SignInUser used to sign in user
-func (r *UserMS) SignIn(ctx context.Context, user *models.User) (handler.Tokens, error) {
+func (r *UserMS) SignIn(ctx context.Context, user *models.User) (models.Tokens, error) {
 	res, errGRPC := r.clientAuth.SignIn(ctx, &pr.SignInRequest{Name: user.Name, Password: user.Password})
 	if errGRPC != nil {
-		return handler.Tokens{}, fmt.Errorf("error while sign up, %s", errGRPC)
+		return models.Tokens{}, fmt.Errorf("error while sign up, %s", errGRPC)
 	}
 
-	return handler.Tokens{RefreshToken: res.Rt, AccessToken: res.At}, nil
+	return models.Tokens{RefreshToken: res.Rt, AccessToken: res.At}, nil
 }
 
 // UpdateRefreshToken used to update rt

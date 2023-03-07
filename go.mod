@@ -3,7 +3,7 @@ module cmdMS
 go 1.19
 
 require (
-	github.com/IvanVojnic/bandEFroom v1.0.1
+	github.com/IvanVojnic/bandEFroom v1.0.2
 	github.com/IvanVojnic/bandEFuser v1.0.3
 	github.com/caarlos0/env/v7 v7.0.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible

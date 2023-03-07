@@ -13,7 +13,8 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/sirupsen/logrus"
 
-	pr "github.com/IvanVojnic/bandEFuser/proto"
+	prRoom "github.com/IvanVojnic/bandEFroom/proto"
+	prUser "github.com/IvanVojnic/bandEFuser/proto"
 )
 
 func main() {
@@ -34,15 +35,30 @@ func main() {
 
 	var userAuthServ *service.AuthService
 	var userCommServ *service.UserCommSrv
-	conn, err := grpc.Dial(os.Getenv("PORT"), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	var roomServ *service.RoomInviteService
+	connUserMS, err := grpc.Dial(os.Getenv("PORT"), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		logrus.Fatalf("error while conecting to user ms, %s", err)
 	}
 
-	client := pr.NewUserClient(conn)
-	userRepo := repository.NewUserMS(client)
+	connRoomMS, err := grpc.Dial(os.Getenv("PORT"), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		logrus.Fatalf("error while conecting to user ms, %s", err)
+	}
+
+	clientUserComm := prUser.NewUserCommClient(connUserMS)
+	clientUserAuth := prUser.NewUserAuthClient(connUserMS)
+
+	clientRoom := prRoom.NewRoomClient(connRoomMS)
+	clientInvite := prRoom.NewInviteClient(connRoomMS)
+
+	userRepo := repository.NewUserMS(clientUserComm, clientUserAuth)
+	roomRepo := repository.NewRoomMS(clientRoom, clientInvite)
+
 	userAuthServ = service.NewAuthService(userRepo)
 	userCommServ = service.NewUserCommSrv(userRepo)
-	profileHandlers := handler.NewHandler(userAuthServ, userCommServ)
+	roomServ = service.NewRoomInviteService(roomRepo)
+
+	profileHandlers := handler.NewHandler(userAuthServ, userCommServ, roomServ)
 	profileHandlers.InitRoutes(e)
 }

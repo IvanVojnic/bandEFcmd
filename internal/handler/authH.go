@@ -17,16 +17,13 @@ func (h *Handler) SignUp(c echo.Context) error {
 	errBind := c.Bind(&user)
 	if errBind != nil {
 		logrus.WithFields(logrus.Fields{
-			"Error Bind json while creating user": errBind,
-			"user":                                user,
+			"user": user,
 		}).Errorf("Bind json, %s", errBind)
 		return echo.NewHTTPError(http.StatusInternalServerError, "data not correct")
 	}
 	err := h.authS.SignUp(c.Request().Context(), &user)
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"Error create user": err,
-		}).Errorf("CREATE USER request, %s", err)
+		logrus.Errorf("CREATE USER request, %s", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "user creating failed")
 	}
 	return c.String(http.StatusOK, "user created")

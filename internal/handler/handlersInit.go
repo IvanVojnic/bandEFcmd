@@ -2,13 +2,10 @@
 package handler
 
 import (
+	"cmdMS/internal/middlewareCMD"
 	"context"
-	"net/http"
-	"strings"
 	"time"
 
-	"cmdMS/internal/errorwrapper"
-	"cmdMS/internal/utils"
 	"cmdMS/models"
 
 	"github.com/google/uuid"
@@ -56,7 +53,7 @@ func NewHandler(authS Authorization, userS UserComm, roomS RoomInvite) *Handler 
 
 // InitRoutes used to init routes.txt
 func (h *Handler) InitRoutes(router *echo.Echo) *echo.Echo {
-	router.Use(jwtAuthMiddleware())
+	router.Use(middlewareCMD.JwtAuthMiddleware())
 	rAuth := router.Group("/auth")
 	rAuth.POST("/refreshToken", h.RefreshToken)
 	rAuth.POST("/createUser", h.SignUp)
@@ -77,31 +74,6 @@ func (h *Handler) InitRoutes(router *echo.Echo) *echo.Echo {
 	rRoom.POST("/getRoomUsers", h.GetRoomUsers)
 	router.Logger.Fatal(router.Start(":40000"))
 	return router
-}
-
-func jwtAuthMiddleware() echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) (err error) {
-			if c.Path() == "/auth/createUser" || c.Path() == "/auth/signIn" || c.Path() == "/auth/refreshToken" {
-				return next(c)
-			}
-			var tokens models.Tokens
-			req := c.Request()
-			headers := req.Header
-			atHeader := headers.Get("Authorization")
-			if atHeader == "" {
-				return echo.NewHTTPError(http.StatusUnauthorized, "no access token in header")
-			}
-			atHeaderArr := strings.Split(atHeader, " ")
-			tokens.AccessToken = atHeaderArr[1]
-			userID, errIsAuth := utils.IsAuthorized(tokens.AccessToken)
-			if errIsAuth != nil {
-				return echo.NewHTTPError(http.StatusUnauthorized, errorwrapper.ErrorResponse{Message: errIsAuth.Error()})
-			}
-			c.Set("user_id", userID)
-			return next(c)
-		}
-	}
 }
 
 /*func CORSMiddleware() gin.HandlerFunc {

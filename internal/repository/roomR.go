@@ -52,15 +52,15 @@ func (r *RoomMS) GetRooms(ctx context.Context, userID uuid.UUID) ([]*models.Room
 func (r *RoomMS) GetRoomUsers(ctx context.Context, roomID uuid.UUID) ([]*models.User, error) {
 	users := make([]*models.User, 0)
 	res, err := r.clientRoom.GetUsersRoom(ctx, &pr.GetUsersRoomRequest{RoomID: roomID.String()})
+	if err != nil {
+		return nil, fmt.Errorf("error while getting users for current room, %s", err)
+	}
 	for _, user := range res.Users {
 		userID, errParse := uuid.Parse(user.ID)
 		if errParse != nil {
-			return users, fmt.Errorf("error while parsing room ID, %s", errParse)
+			return nil, fmt.Errorf("error while parsing room ID, %s", errParse)
 		}
 		users = append(users, &models.User{ID: userID, Name: user.Name, Email: user.Email})
-	}
-	if err != nil {
-		return users, fmt.Errorf("error while getting users for current room, %s", err)
 	}
 	return users, nil
 }

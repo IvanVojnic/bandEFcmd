@@ -28,10 +28,10 @@ func (r *UserMS) SignUp(ctx context.Context, user *models.User) error {
 	if errGRPC != nil {
 		return fmt.Errorf("error while sign up, %s", errGRPC)
 	}
-	if res.IsCreated {
-		return nil
+	if !res.IsCreated {
+		return fmt.Errorf("cannot create user")
 	}
-	return fmt.Errorf("cannot create user")
+	return nil
 }
 
 // SignIn used to sign in user
@@ -61,8 +61,7 @@ func (r *UserMS) GetFriends(ctx context.Context, userID uuid.UUID) ([]*models.Us
 		if errParse != nil {
 			return users, fmt.Errorf("error while getting friends, %s", errParse)
 		}
-		user := models.User{ID: friendID, Name: res.Friends[i].Name, Email: res.Friends[i].Email}
-		users = append(users, &user)
+		users = append(users, &models.User{ID: friendID, Name: res.Friends[i].Name, Email: res.Friends[i].Email})
 	}
 	return users, nil
 }

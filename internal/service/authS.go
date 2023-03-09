@@ -1,12 +1,13 @@
+// Package service user auth service
 package service
 
 import (
 	"cmdMS/models"
 	"context"
 	"fmt"
-	"golang.org/x/crypto/bcrypt"
 
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // Authorization interface consists of methos to communicate with user repo
@@ -15,6 +16,9 @@ type Authorization interface {
 	SignIn(ctx context.Context, user *models.User) (models.Tokens, error)
 	UpdateRefreshToken(context.Context, string, uuid.UUID) error
 }
+
+// cost used to generate password
+const cost = 14
 
 // AuthService is wrapper for user repo
 type AuthService struct {
@@ -48,13 +52,14 @@ func (s *AuthService) SignIn(ctx context.Context, user *models.User) (models.Tok
 	return tokens, nil
 }
 
+// UpdateRefreshToken used to update refresh token
 func (s *AuthService) UpdateRefreshToken(context.Context, string, uuid.UUID) error {
 	return nil
 }
 
 // generatePasswordHash used to generate hash password
 func generatePasswordHash(user *models.User) error {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(user.Password), 14)
+	bytes, err := bcrypt.GenerateFromPassword([]byte(user.Password), cost)
 	user.Password = string(bytes)
 	return err
 }

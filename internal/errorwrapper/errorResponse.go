@@ -1,3 +1,4 @@
+// Package errorwrapper used in jwt middleware
 package errorwrapper
 
 // ErrorResponse used in middleware

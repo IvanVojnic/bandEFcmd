@@ -1,3 +1,4 @@
+// Package models User
 package models
 
 import "github.com/google/uuid"

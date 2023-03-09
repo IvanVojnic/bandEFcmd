@@ -1,3 +1,4 @@
+// Package utils used to verify tokens
 package utils
 
 import (
@@ -9,14 +10,14 @@ import (
 	"github.com/google/uuid"
 )
 
-// SigningKey is a secret key for tokens
-const SigningKey = "barband"
+// SigningKeyAccess is a secret key for tokens
+const SigningKeyAccess = "al5jkvkls83l9cw6l"
 
-// TokenRTDuration is a duration of rt life
-const TokenRTDuration = 1 * time.Hour
+// SigningKeyRefresh is a secret key for tokens
+const SigningKeyRefresh = "jkvf7834lkjbas98"
 
-// TokenATDuretion is a duration of at life
-const TokenATDuretion = 100 * time.Minute
+// TokenATDuration is a duration of at life
+const TokenATDuration = 100 * time.Minute
 
 type tokenClaims struct {
 	jwt.StandardClaims
@@ -29,7 +30,7 @@ func ParseToken(tokenToParse string) (uuid.UUID, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("invalid signing method")
 		}
-		return []byte(SigningKey), nil
+		return []byte(SigningKeyAccess), nil
 	})
 	if err != nil {
 		return uuid.UUID{}, err
@@ -51,7 +52,7 @@ func GenerateToken(id uuid.UUID, tokenDuration time.Duration) (string, error) {
 		},
 		id,
 	})
-	return token.SignedString([]byte(SigningKey))
+	return token.SignedString([]byte(SigningKeyAccess))
 }
 
 // IsAuthorized used to check is user authorized with the tokens
@@ -69,7 +70,7 @@ func IsTokenExpired(requestToken string) bool {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("invalid signing method")
 		}
-		return []byte(SigningKey), nil
+		return []byte(SigningKeyAccess), nil
 	})
 	v, _ := err.(*jwt.ValidationError)
 	tokenExpired := false

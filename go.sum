@@ -1,7 +1,7 @@
-github.com/IvanVojnic/bandEFroom v1.0.0 h1:hFzqqf3pXzm9DRMgXruTFoYmuAh43YwDiVn+qkMDd24=
-github.com/IvanVojnic/bandEFroom v1.0.0/go.mod h1:UrO6OgywY3L1RHTHqLvOQuehQFhfvIiCI4clifXLbtE=
-github.com/IvanVojnic/bandEFuser v1.0.2 h1:32De25/0J725GSwvMHAoJiNglH1lAP6ukkw41l77Syk=
-github.com/IvanVojnic/bandEFuser v1.0.2/go.mod h1:5R43CQDhNFw4D3VjBHl7O4YhLh8Su1pmOtjkdOWexpY=
+github.com/IvanVojnic/bandEFroom v1.0.2 h1:Jues8kKUdBT/zGlXsCQ9F2a2w/2MsqZYvDphiBji1mM=
+github.com/IvanVojnic/bandEFroom v1.0.2/go.mod h1:8SygMD8EYzXCggRbsxzG0tV0EeVHbhM2kxierQ8bsZA=
+github.com/IvanVojnic/bandEFuser v1.0.3 h1:YdyXzNztvnuV0mTNqAd1BYO4bmwxWPSiaqU3Gef2vqc=
+github.com/IvanVojnic/bandEFuser v1.0.3/go.mod h1:5R43CQDhNFw4D3VjBHl7O4YhLh8Su1pmOtjkdOWexpY=
 github.com/caarlos0/env/v7 v7.0.0 h1:cyczlTd/zREwSr9ch/mwaDl7Hse7kJuUY8hvHfXu5WI=
 github.com/caarlos0/env/v7 v7.0.0/go.mod h1:LPPWniDUq4JaO6Q41vtlyikhMknqymCLBw0eX4dcH1E=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

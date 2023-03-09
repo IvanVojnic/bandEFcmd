@@ -1,19 +1,21 @@
+// Package service user comm service
 package service
 
 import (
 	"cmdMS/models"
 	"context"
+
 	"github.com/google/uuid"
 )
 
 // UserComm interface consists of methods to users actions
 type UserComm interface {
-	AcceptFriendsRequest(ctx context.Context, userSenderID uuid.UUID, userReceiverID uuid.UUID) error
-	DeclineFriendsRequest(ctx context.Context, userSenderID uuid.UUID, userID uuid.UUID) error
-	GetFriends(ctx context.Context, userID uuid.UUID) ([]models.User, error)
-	SendFriendsRequest(ctx context.Context, userSender uuid.UUID, userReceiver uuid.UUID) error
+	AcceptFriendsRequest(ctx context.Context, userSenderID, userReceiverID uuid.UUID) error
+	DeclineFriendsRequest(ctx context.Context, userSenderID, userID uuid.UUID) error
+	GetFriends(ctx context.Context, userID uuid.UUID) ([]*models.User, error)
+	SendFriendsRequest(ctx context.Context, userSender, userReceiver uuid.UUID) error
 	FindUser(ctx context.Context, userEmail string) (models.User, error)
-	GetRequest(ctx context.Context, userID uuid.UUID) ([]models.User, error)
+	GetRequest(ctx context.Context, userID uuid.UUID) ([]*models.User, error)
 }
 
 // UserCommSrv wrapper for UserCommP repo
@@ -27,22 +29,22 @@ func NewUserCommSrv(repo UserComm) *UserCommSrv {
 }
 
 // AcceptFriendsRequest used to accept friends request
-func (s *UserCommSrv) AcceptFriendsRequest(ctx context.Context, userSenderID uuid.UUID, userReceiverID uuid.UUID) error {
+func (s *UserCommSrv) AcceptFriendsRequest(ctx context.Context, userSenderID, userReceiverID uuid.UUID) error { // nolint:dupl, gocritic
 	return s.repo.AcceptFriendsRequest(ctx, userSenderID, userReceiverID)
 }
 
 // DeclineFriendsRequest used to accept friends request
-func (s *UserCommSrv) DeclineFriendsRequest(ctx context.Context, userSenderID uuid.UUID, userID uuid.UUID) error {
+func (s *UserCommSrv) DeclineFriendsRequest(ctx context.Context, userSenderID, userID uuid.UUID) error { // nolint:dupl, gocritic
 	return s.repo.DeclineFriendsRequest(ctx, userSenderID, userID)
 }
 
 // GetFriends used send users friends
-func (s *UserCommSrv) GetFriends(ctx context.Context, userID uuid.UUID) ([]models.User, error) {
+func (s *UserCommSrv) GetFriends(ctx context.Context, userID uuid.UUID) ([]*models.User, error) { // nolint:dupl, gocritic
 	return s.repo.GetFriends(ctx, userID)
 }
 
 // SendFriendsRequest used users requests
-func (s *UserCommSrv) SendFriendsRequest(ctx context.Context, userSender uuid.UUID, userReceiver uuid.UUID) error {
+func (s *UserCommSrv) SendFriendsRequest(ctx context.Context, userSender, userReceiver uuid.UUID) error {
 	return s.repo.SendFriendsRequest(ctx, userSender, userReceiver)
 }
 
@@ -52,6 +54,6 @@ func (s *UserCommSrv) FindUser(ctx context.Context, userEmail string) (models.Us
 }
 
 // GetRequest used send request to the user
-func (s *UserCommSrv) GetRequest(ctx context.Context, userID uuid.UUID) ([]models.User, error) {
+func (s *UserCommSrv) GetRequest(ctx context.Context, userID uuid.UUID) ([]*models.User, error) { // nolint:dupl, gocritic
 	return s.repo.GetRequest(ctx, userID)
 }

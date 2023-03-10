@@ -1,4 +1,4 @@
-// Package handler users auth handlers
+// Package rpc users auth handlers
 package handler
 
 import (

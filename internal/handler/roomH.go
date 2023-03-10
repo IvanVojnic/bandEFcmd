@@ -1,4 +1,4 @@
-// Package handler room invite handlers
+// Package rpc room invite handlers
 package handler
 
 import (

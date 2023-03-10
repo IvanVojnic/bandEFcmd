@@ -1,4 +1,4 @@
-// Package handler users comm handlers
+// Package rpc users comm handlers
 package handler
 
 import (

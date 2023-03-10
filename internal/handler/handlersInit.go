@@ -1,4 +1,4 @@
-// Package handler handlers init
+// Package rpc handlers init
 package handler
 
 import (

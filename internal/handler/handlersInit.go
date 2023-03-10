@@ -2,7 +2,7 @@
 package handler
 
 import (
-	"cmdMS/internal/middlewareCMD"
+	"cmdMS/internal/middleware"
 	"context"
 	"time"
 
@@ -10,7 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	echoMiddleware "github.com/labstack/echo/v4/middleware"
 )
 
 // UserComm service consists of methods of user actions
@@ -53,13 +53,13 @@ func NewHandler(authS Authorization, userS UserComm, roomS RoomInvite) *Handler 
 
 // InitRoutes used to init routes.txt
 func (h *Handler) InitRoutes(router *echo.Echo) *echo.Echo {
-	router.Use(middlewareCMD.JwtAuthMiddleware())
+	router.Use(middleware.JwtAuthMiddleware())
 	rAuth := router.Group("/auth")
 	rAuth.POST("/refreshToken", h.RefreshToken)
 	rAuth.POST("/createUser", h.SignUp)
 	rAuth.POST("/signIn", h.SignIn)
 	rUserComm := router.Group("/userComm")
-	rUserComm.Use(middleware.Logger())
+	rUserComm.Use(echoMiddleware.Logger())
 	rUserComm.POST("/getFriends", h.GetFriends)
 	rUserComm.GET("/getFriendsRequest", h.SendFriendsRequest)
 	rUserComm.POST("/acceptFriendsRequest", h.AcceptFriendsRequest)

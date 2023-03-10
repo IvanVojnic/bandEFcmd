@@ -1,4 +1,4 @@
-package middlewareCMD
+package middleware
 
 import (
 	"cmdMS/internal/errorwrapper"

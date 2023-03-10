@@ -1,7 +1,7 @@
-// Package errorwrapper used in jwt middlewareCMD
+// Package errorwrapper used in jwt middleware
 package errorwrapper
 
-// ErrorResponse used in middlewareCMD
+// ErrorResponse used in middleware
 type ErrorResponse struct {
 	Message string
 }

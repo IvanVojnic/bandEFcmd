@@ -37,12 +37,12 @@ func main() {
 	var userAuthServ *service.AuthService
 	var userCommServ *service.UserCommSrv
 	var roomServ *service.RoomInviteService
-	connUserMS, err := grpc.Dial("dns///cmd:8000", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	connUserMS, err := grpc.Dial("app:8000", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		logrus.Fatalf("error while conecting to user ms, %s", err)
 	}
 
-	connRoomMS, err := grpc.Dial("dns///room:9000", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	connRoomMS, err := grpc.Dial("app:9000", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		logrus.Fatalf("error while conecting to user ms, %s", err)
 	}
